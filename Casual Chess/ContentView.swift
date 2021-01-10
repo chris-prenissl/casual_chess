@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Image("pawn_b")
+        Image("chess_board")
     }
 }
 

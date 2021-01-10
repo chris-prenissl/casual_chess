@@ -15,6 +15,7 @@
 		214DE99F25AB7E2A004793BF /* Casual_ChessUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE99E25AB7E2A004793BF /* Casual_ChessUITests.swift */; };
 		21E152F725AB907700CD9FF3 /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152F625AB907700CD9FF3 /* Piece.swift */; };
 		21E152FC25AB930300CD9FF3 /* ChessBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152FB25AB930300CD9FF3 /* ChessBoard.swift */; };
+		21E1530125ABA16E00CD9FF3 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21E1530025ABA16E00CD9FF3 /* Colors.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +50,7 @@
 		214DE9A025AB7E2A004793BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		21E152F625AB907700CD9FF3 /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
 		21E152FB25AB930300CD9FF3 /* ChessBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessBoard.swift; sourceTree = "<group>"; };
+		21E1530025ABA16E00CD9FF3 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,11 +103,12 @@
 			children = (
 				214DE98125AB7E2A004793BF /* Casual_ChessApp.swift */,
 				214DE98325AB7E2A004793BF /* ContentView.swift */,
-				214DE98525AB7E2A004793BF /* Assets.xcassets */,
 				214DE98A25AB7E2A004793BF /* Info.plist */,
 				214DE98725AB7E2A004793BF /* Preview Content */,
 				21E152F625AB907700CD9FF3 /* Piece.swift */,
 				21E152FB25AB930300CD9FF3 /* ChessBoard.swift */,
+				214DE98525AB7E2A004793BF /* Assets.xcassets */,
+				21E1530025ABA16E00CD9FF3 /* Colors.xcassets */,
 			);
 			path = "Casual Chess";
 			sourceTree = "<group>";
@@ -239,6 +242,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21E1530125ABA16E00CD9FF3 /* Colors.xcassets in Resources */,
 				214DE98925AB7E2A004793BF /* Preview Assets.xcassets in Resources */,
 				214DE98625AB7E2A004793BF /* Assets.xcassets in Resources */,
 			);
