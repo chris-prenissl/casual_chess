@@ -13,6 +13,8 @@
 		214DE98925AB7E2A004793BF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 214DE98825AB7E2A004793BF /* Preview Assets.xcassets */; };
 		214DE99425AB7E2A004793BF /* Casual_ChessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE99325AB7E2A004793BF /* Casual_ChessTests.swift */; };
 		214DE99F25AB7E2A004793BF /* Casual_ChessUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE99E25AB7E2A004793BF /* Casual_ChessUITests.swift */; };
+		21E152F725AB907700CD9FF3 /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152F625AB907700CD9FF3 /* Piece.swift */; };
+		21E152FC25AB930300CD9FF3 /* ChessBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152FB25AB930300CD9FF3 /* ChessBoard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -45,6 +47,8 @@
 		214DE99A25AB7E2A004793BF /* Casual ChessUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Casual ChessUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		214DE99E25AB7E2A004793BF /* Casual_ChessUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Casual_ChessUITests.swift; sourceTree = "<group>"; };
 		214DE9A025AB7E2A004793BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		21E152F625AB907700CD9FF3 /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
+		21E152FB25AB930300CD9FF3 /* ChessBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessBoard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +104,8 @@
 				214DE98525AB7E2A004793BF /* Assets.xcassets */,
 				214DE98A25AB7E2A004793BF /* Info.plist */,
 				214DE98725AB7E2A004793BF /* Preview Content */,
+				21E152F625AB907700CD9FF3 /* Piece.swift */,
+				21E152FB25AB930300CD9FF3 /* ChessBoard.swift */,
 			);
 			path = "Casual Chess";
 			sourceTree = "<group>";
@@ -260,7 +266,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				214DE98425AB7E2A004793BF /* ContentView.swift in Sources */,
+				21E152FC25AB930300CD9FF3 /* ChessBoard.swift in Sources */,
 				214DE98225AB7E2A004793BF /* Casual_ChessApp.swift in Sources */,
+				21E152F725AB907700CD9FF3 /* Piece.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
