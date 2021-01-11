@@ -9,7 +9,11 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Image("chess_board")
+        ZStack {
+            Image("chess_board")
+            Image("bishop_b")
+                
+        }
     }
 }
 
