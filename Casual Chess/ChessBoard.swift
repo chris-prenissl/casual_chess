@@ -8,7 +8,8 @@
 import Foundation
 
 
-class ChessBoard {
+struct ChessBoard {
+    let rows = 8, columns = 8
     
     let urlString: String = "chess_board"
     
@@ -20,5 +21,12 @@ class ChessBoard {
                              [nil, nil, nil, nil, nil, nil, nil, nil],
                              [Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white)],
                              [Piece(type: .rook, color: .white), Piece(type: .knight, color: .white), Piece(type: .bishop, color: .white), Piece(type: .queen, color: .white), Piece(type: .king, color: .white), Piece(type: .bishop, color: .white), Piece(type: .knight, color: .white), Piece(type: .rook, color: .white)]]
+    
+    subscript(row: Int, column: Int) -> Piece? {
+        get {
+            
+            return board[row][column]
+        }
+    }
     
 }
