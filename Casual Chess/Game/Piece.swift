@@ -20,5 +20,6 @@ struct Piece {
         let colorCode = color == .black ? "b" : "w"
         return type.rawValue + "_" + colorCode
     }
+    var moved = false
 }
 

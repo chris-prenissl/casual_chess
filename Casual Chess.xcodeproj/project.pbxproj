@@ -7,14 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		210DA19925B396CD0020CAEC /* Coordinate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210DA19825B396CD0020CAEC /* Coordinate.swift */; };
 		214DE98225AB7E2A004793BF /* Casual_ChessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE98125AB7E2A004793BF /* Casual_ChessApp.swift */; };
 		214DE98425AB7E2A004793BF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE98325AB7E2A004793BF /* ContentView.swift */; };
 		214DE98625AB7E2A004793BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 214DE98525AB7E2A004793BF /* Assets.xcassets */; };
 		214DE98925AB7E2A004793BF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 214DE98825AB7E2A004793BF /* Preview Assets.xcassets */; };
 		214DE99425AB7E2A004793BF /* Casual_ChessTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE99325AB7E2A004793BF /* Casual_ChessTests.swift */; };
 		214DE99F25AB7E2A004793BF /* Casual_ChessUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE99E25AB7E2A004793BF /* Casual_ChessUITests.swift */; };
+		214FDCD325B474C70062240D /* BackgroundLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214FDCD225B474C70062240D /* BackgroundLayer.swift */; };
+		214FDCD825B475B40062240D /* MoveLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214FDCD725B475B40062240D /* MoveLayer.swift */; };
+		214FDCDD25B479BC0062240D /* PieceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214FDCDC25B479BC0062240D /* PieceView.swift */; };
 		21E152F725AB907700CD9FF3 /* Piece.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152F625AB907700CD9FF3 /* Piece.swift */; };
-		21E152FC25AB930300CD9FF3 /* ChessBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152FB25AB930300CD9FF3 /* ChessBoard.swift */; };
+		21E152FC25AB930300CD9FF3 /* ChessBoardGame.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21E152FB25AB930300CD9FF3 /* ChessBoardGame.swift */; };
 		21E1530125ABA16E00CD9FF3 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 21E1530025ABA16E00CD9FF3 /* Colors.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -36,6 +40,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		210DA19825B396CD0020CAEC /* Coordinate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinate.swift; sourceTree = "<group>"; };
 		214DE97E25AB7E2A004793BF /* Casual Chess.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Casual Chess.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		214DE98125AB7E2A004793BF /* Casual_ChessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Casual_ChessApp.swift; sourceTree = "<group>"; };
 		214DE98325AB7E2A004793BF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -48,8 +53,11 @@
 		214DE99A25AB7E2A004793BF /* Casual ChessUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Casual ChessUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		214DE99E25AB7E2A004793BF /* Casual_ChessUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Casual_ChessUITests.swift; sourceTree = "<group>"; };
 		214DE9A025AB7E2A004793BF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		214FDCD225B474C70062240D /* BackgroundLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLayer.swift; sourceTree = "<group>"; };
+		214FDCD725B475B40062240D /* MoveLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveLayer.swift; sourceTree = "<group>"; };
+		214FDCDC25B479BC0062240D /* PieceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieceView.swift; sourceTree = "<group>"; };
 		21E152F625AB907700CD9FF3 /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
-		21E152FB25AB930300CD9FF3 /* ChessBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessBoard.swift; sourceTree = "<group>"; };
+		21E152FB25AB930300CD9FF3 /* ChessBoardGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessBoardGame.swift; sourceTree = "<group>"; };
 		21E1530025ABA16E00CD9FF3 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -101,14 +109,12 @@
 		214DE98025AB7E2A004793BF /* Casual Chess */ = {
 			isa = PBXGroup;
 			children = (
+				214FDCE425B47A0E0062240D /* Math */,
+				219299B125B45486003C3A5D /* Game */,
+				219299B025B45453003C3A5D /* Assets and Configurations */,
+				219299AF25B45423003C3A5D /* Views */,
 				214DE98125AB7E2A004793BF /* Casual_ChessApp.swift */,
-				214DE98325AB7E2A004793BF /* ContentView.swift */,
-				214DE98A25AB7E2A004793BF /* Info.plist */,
 				214DE98725AB7E2A004793BF /* Preview Content */,
-				21E152F625AB907700CD9FF3 /* Piece.swift */,
-				21E152FB25AB930300CD9FF3 /* ChessBoard.swift */,
-				214DE98525AB7E2A004793BF /* Assets.xcassets */,
-				21E1530025ABA16E00CD9FF3 /* Colors.xcassets */,
 			);
 			path = "Casual Chess";
 			sourceTree = "<group>";
@@ -137,6 +143,44 @@
 				214DE9A025AB7E2A004793BF /* Info.plist */,
 			);
 			path = "Casual ChessUITests";
+			sourceTree = "<group>";
+		};
+		214FDCE425B47A0E0062240D /* Math */ = {
+			isa = PBXGroup;
+			children = (
+				210DA19825B396CD0020CAEC /* Coordinate.swift */,
+			);
+			path = Math;
+			sourceTree = "<group>";
+		};
+		219299AF25B45423003C3A5D /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				214DE98325AB7E2A004793BF /* ContentView.swift */,
+				214FDCD225B474C70062240D /* BackgroundLayer.swift */,
+				214FDCD725B475B40062240D /* MoveLayer.swift */,
+				214FDCDC25B479BC0062240D /* PieceView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		219299B025B45453003C3A5D /* Assets and Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				214DE98525AB7E2A004793BF /* Assets.xcassets */,
+				21E1530025ABA16E00CD9FF3 /* Colors.xcassets */,
+				214DE98A25AB7E2A004793BF /* Info.plist */,
+			);
+			path = "Assets and Configurations";
+			sourceTree = "<group>";
+		};
+		219299B125B45486003C3A5D /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				21E152FB25AB930300CD9FF3 /* ChessBoardGame.swift */,
+				21E152F625AB907700CD9FF3 /* Piece.swift */,
+			);
+			path = Game;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -270,9 +314,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				214DE98425AB7E2A004793BF /* ContentView.swift in Sources */,
-				21E152FC25AB930300CD9FF3 /* ChessBoard.swift in Sources */,
+				214FDCD325B474C70062240D /* BackgroundLayer.swift in Sources */,
+				21E152FC25AB930300CD9FF3 /* ChessBoardGame.swift in Sources */,
+				214FDCDD25B479BC0062240D /* PieceView.swift in Sources */,
 				214DE98225AB7E2A004793BF /* Casual_ChessApp.swift in Sources */,
+				214FDCD825B475B40062240D /* MoveLayer.swift in Sources */,
 				21E152F725AB907700CD9FF3 /* Piece.swift in Sources */,
+				210DA19925B396CD0020CAEC /* Coordinate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,7 +407,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -414,7 +462,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 14.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -433,7 +481,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "Casual Chess/Info.plist";
+				INFOPLIST_FILE = "/Users/christophprenissl/Projects/Swift/Casual Chess/Casual ChessUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -455,7 +503,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "Casual Chess/Info.plist";
+				INFOPLIST_FILE = "/Users/christophprenissl/Projects/Swift/Casual Chess/Casual ChessUITests/Info.plist";
+				"INFOPLIST_FILE[sdk=*]" = "/Users/christophprenissl/Projects/Swift/Casual Chess/Casual ChessUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
