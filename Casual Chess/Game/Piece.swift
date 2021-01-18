@@ -21,5 +21,5 @@ struct Piece {
         return type.rawValue + "_" + colorCode
     }
     var moved = false
+    var moveList = [Coordinate : Bool]()
 }
-

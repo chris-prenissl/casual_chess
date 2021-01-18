@@ -5,7 +5,7 @@
 //  Created by Christoph Prenissl on 16.01.21.
 //
 
-struct Coordinate : Equatable {
+struct Coordinate : Equatable, Hashable {
     var x: Int
     var y: Int
     
@@ -24,4 +24,9 @@ struct Coordinate : Equatable {
     static func == (lhs: Coordinate, rhs: Coordinate) -> Bool {
         return lhs.x == rhs.x && lhs.y == rhs.y
     }
+    
+    func hash(into hasher: inout Hasher) {
+            hasher.combine(x)
+            hasher.combine(y)
+        }
 }

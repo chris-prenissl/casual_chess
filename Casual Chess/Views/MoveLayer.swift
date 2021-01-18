@@ -25,14 +25,14 @@ struct ChessPlayGrid: View {
                             .onEnded {
                                 if game.activePlayer == game.piecesBoard[row][column]?.color {
                                     game.setCurrentChosenPiece(coordinate: Coordinate(x: column, y: row))
-                                } else if game.currentMoves[row][column] {
+                                } else if game.currentMoves[Coordinate(x: column, y: row)] ?? false {
                                     game.movePieceTo(x: column, y: row)
                                 }
                             }
                         PieceView(piece: game.piecesBoard[row][column], sizeFactor: sizeFactor, width: width)
                             .gesture(tapGesture)
                             .background(game.currentChosenPieceCoordinate?.x == column && game.currentChosenPieceCoordinate?.y == row ? Color(.cyan) : Color(.clear))
-                            .border(game.currentMoves[row][column] ? Color(.blue) : Color(.clear))
+                            .border(game.currentMoves[Coordinate(x: column, y: row)] ?? false ? Color(.blue) : Color(.clear))
                     }
                 }
             }
