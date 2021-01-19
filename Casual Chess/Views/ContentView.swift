@@ -21,11 +21,25 @@ struct ContentView: View {
     @ObservedObject var game = ChessBoardGame()
     
     var body: some View {
-        
         ZStack {
             Canvas()
             ChessBoard(sizeFactor: sizeFactor, width: boardWidth)
             ChessPlayGrid(game: game, sizeFactor: sizeFactor, width: boardWidth)
+            VStack {
+                Spacer()
+                HStack {
+                    Button ("Zurücksetzen") {
+                        game.restart()
+                    }
+                    .buttonStyle(ChessButtonStyle())
+                    Button(action: {
+                        game.restoreLastMove()
+                    } , label: {
+                        Image(systemName: "arrowshape.turn.up.backward.fill")
+                    })
+                    .buttonStyle(ChessButtonStyle())
+                }
+            }
         }
     }
 }

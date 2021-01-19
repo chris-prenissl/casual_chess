@@ -11,14 +11,7 @@ import SwiftUI
 class ChessBoardGame: ObservableObject {
     let rows = 8, columns = 8
     
-    @Published var piecesBoard: [[Piece?]] = [[Piece(type: .rook, color: .black), Piece(type: .knight, color: .black), Piece(type: .bishop, color: .black), Piece(type: .queen, color: .black), Piece(type: .king, color: .black), Piece(type: .bishop, color: .black), Piece(type: .knight, color: .black), Piece(type: .rook, color: .black)],
-                             [Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black)],
-                             [nil, nil, nil, nil, nil, nil, nil, nil],
-                             [nil, nil, nil, nil, nil, nil, nil, nil],
-                             [nil, nil, nil, nil, nil, nil, nil, nil],
-                             [nil, nil, nil, nil, nil, nil, nil, nil],
-                             [Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white)],
-                             [Piece(type: .rook, color: .white), Piece(type: .knight, color: .white), Piece(type: .bishop, color: .white), Piece(type: .queen, color: .white), Piece(type: .king, color: .white), Piece(type: .bishop, color: .white), Piece(type: .knight, color: .white), Piece(type: .rook, color: .white)]]
+    @Published var piecesBoard: [[Piece?]] = startingConfiguration
     
     @Published var activePlayer: PieceColor = .white
     var currentChosenPiece: Piece?
@@ -28,15 +21,31 @@ class ChessBoardGame: ObservableObject {
     var currentTwoSteppedPawnColor: PieceColor?
     @Published var currentMoves = [Coordinate : Bool]()
     
+    var history = [[String : [Coordinate : Piece?]]]()
+    var twoSteppedPawnHistory = [[Coordinate : PieceColor]?]()
+    
+    func restart() {
+        piecesBoard = startingConfiguration
+        activePlayer = .white
+        currentChosenPiece = nil
+        currentChosenPieceCoordinate = nil
+        currentTwoSteppedPawnCoordinate = nil
+        currentTwoSteppedPawnColor = nil
+        currentMoves = [:]
+    }
+    
     func movePieceTo(x: Int, y: Int) {
         guard let pieceCoordinate = currentChosenPieceCoordinate, let chosenPiece = currentChosenPiece else {
             print("No piece was chosen")
             return
         }
         
+        saveMove(rootFile: pieceCoordinate, destFile: Coordinate(x: x, y: y))
+        
         piecesBoard[y][x] = chosenPiece
         piecesBoard[pieceCoordinate.y][pieceCoordinate.x] = nil
         
+        currentChosenPieceCoordinate = Coordinate(x: x, y: y)
         piecesBoard[y][x]?.moved = true
         
         if chosenPiece.type == .pawn {
@@ -70,7 +79,10 @@ class ChessBoardGame: ObservableObject {
         
         currentChosenPiece = piece
         currentChosenPieceCoordinate = coordinate
+        resetCurrentMoves()
+        resetMovesOf(pCoor: coordinate)
         createMovesForPiece(pCoor: coordinate)
+        setCurrentMovesOf(pCoor: coordinate)
     }
     
     private func setNextPlayer() {
@@ -78,17 +90,68 @@ class ChessBoardGame: ObservableObject {
     }
     
     private func unsetChosenPiece() {
+        resetMovesOf(pCoor: currentChosenPieceCoordinate!)
+        resetCurrentMoves()
         currentChosenPiece = nil
         currentChosenPieceCoordinate = nil
-        resetCurrentMoves()
+    }
+    
+    private func saveMove(rootFile: Coordinate, destFile: Coordinate) {
+        var moveHistoryElement = [String : [Coordinate : Piece?]]()
+        
+        let from = [rootFile : piecesBoard[rootFile.y][rootFile.x]]
+        var to = [destFile : piecesBoard[destFile.y][destFile.x]]
+        
+        if currentTwoSteppedPawnCoordinate == nil {
+            twoSteppedPawnHistory.append(nil)
+        } else {
+            var twoSteppedElement = [Coordinate : PieceColor]()
+            twoSteppedElement.updateValue(currentTwoSteppedPawnColor!, forKey: currentTwoSteppedPawnCoordinate!)
+            twoSteppedPawnHistory.append(twoSteppedElement)
+            let direction = currentTwoSteppedPawnColor! == .white ? -1 : 1
+            to.updateValue(piecesBoard[destFile.y + direction][destFile.x], forKey: Coordinate(x: destFile.x, y: destFile.y - direction))
+        }
+        
+        
+        moveHistoryElement.updateValue(from, forKey: "from")
+        moveHistoryElement.updateValue(to, forKey: "to")
+        history.append(moveHistoryElement)
+    }
+    
+    func restoreLastMove() {
+        if !history.isEmpty {
+            
+            var lastHistoryElement = history.popLast()!
+            let fromDictionary = lastHistoryElement["from"]!.popFirst()
+            let from = fromDictionary?.key
+            let fromPiece = fromDictionary?.value
+            piecesBoard[from!.y][from!.x] = fromPiece
+            
+            var toDictionary = lastHistoryElement["to"]!.popFirst()
+            var to = toDictionary?.key
+            var toPiece = toDictionary?.value
+            piecesBoard[to!.y][to!.x] = toPiece
+            
+            let twoSteppedPawnElement = twoSteppedPawnHistory.popLast()!
+            currentTwoSteppedPawnCoordinate = twoSteppedPawnElement?.keys.first
+            currentTwoSteppedPawnColor = twoSteppedPawnElement?.values.first
+            if currentTwoSteppedPawnColor != nil {
+                toDictionary = lastHistoryElement["to"]!.popFirst()
+                to = toDictionary?.key
+                toPiece = toDictionary?.value
+                piecesBoard[to!.y][to!.x] = toPiece
+            }
+            
+            activePlayer = activePlayer == .white ? .black : .white
+            currentChosenPiece = nil
+            currentChosenPieceCoordinate = nil
+            currentMoves = [:]
+        }
     }
     
     private func createMovesForPiece(pCoor: Coordinate) {
         
-        resetCurrentMoves()
-        resetMovesOf(pCoor: pCoor)
-        
-        switch piecesBoard[pCoor.y][pCoor.x]!.type {
+        switch piecesBoard[pCoor.y][pCoor.x]?.type {
             case .pawn:
                 createMovesForPawn(pCoor: pCoor)
                 break
@@ -107,8 +170,9 @@ class ChessBoardGame: ObservableObject {
             case .knight:
                 createMovesForKnight(pCoor: pCoor)
                 break
+            default:
+            break
         }
-        setCurrentMovesOf(pCoor: pCoor)
     }
     
     private func resetCurrentMoves() {
@@ -117,6 +181,7 @@ class ChessBoardGame: ObservableObject {
     
     private func resetMovesOf(pCoor: Coordinate) {
         piecesBoard[pCoor.y][pCoor.x]!.moveList = [:]
+        piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList = [:]
     }
     
     private func setCurrentMovesOf(pCoor: Coordinate) {
@@ -126,9 +191,16 @@ class ChessBoardGame: ObservableObject {
     private func appendIfCorrect(pCoor: Coordinate, cursor: Coordinate) -> Bool {
         if isCoordinateOutOfBounds(cursor) { return false }
         
-        if piecesBoard[cursor.y][cursor.x]?.color != piecesBoard[pCoor.y][pCoor.x]!.color  {
+        guard let destPiece = piecesBoard[cursor.y][cursor.x] else {
             piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
+            piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList.updateValue(true, forKey: cursor)
             return true
+        }
+        
+        if destPiece.color != piecesBoard[pCoor.y][pCoor.x]!.color  {
+            piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
+            piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList.updateValue(true, forKey: cursor)
+            return false
         }
         return false
     }
@@ -144,12 +216,12 @@ class ChessBoardGame: ObservableObject {
 extension ChessBoardGame {
     private func createMovesForPawn(pCoor: Coordinate) {
         
-        guard let piece = currentChosenPiece else {
+        guard let piece = piecesBoard[pCoor.y][pCoor.x] else {
             print("Error chosing piece")
             return
         }
         
-        let direction = activePlayer == .white ? -1 : 1
+        let direction = piecesBoard[pCoor.y][pCoor.x]!.color == .white ? -1 : 1
         var cursor = Coordinate(x: pCoor.x, y: pCoor.y)
         
 
@@ -175,10 +247,10 @@ extension ChessBoardGame {
         
         cursor.x = pCoor.x + 1
         cursor.y = pCoor.y + direction
-        _ = appendPawnAttackIfCorrect(pCoor: pCoor, cursor: cursor)
+        _ = appendPawnAttacksIfCorrect(pCoor: pCoor, cursor: cursor)
         
         cursor.x = pCoor.x - 1
-        _ = appendPawnAttackIfCorrect(pCoor: pCoor, cursor: cursor)
+        _ = appendPawnAttacksIfCorrect(pCoor: pCoor, cursor: cursor)
     }
     
     private func appendPawnMoveIfCorrect(pCoor: Coordinate, cursor: Coordinate) -> Bool {
@@ -191,13 +263,17 @@ extension ChessBoardGame {
         return false
     }
     
-    private func appendPawnAttackIfCorrect(pCoor: Coordinate, cursor: Coordinate) -> Bool {
+    private func appendPawnAttacksIfCorrect(pCoor: Coordinate, cursor: Coordinate) -> Bool {
         if isCoordinateOutOfBounds(cursor) { return false }
         
-        guard let piece = piecesBoard[cursor.y][cursor.x] else { return false }
+        let piece = piecesBoard[cursor.y][cursor.x]
             
-        if piece.color != piecesBoard[pCoor.y][pCoor.x]!.color {
+        if piece?.color != piecesBoard[pCoor.y][pCoor.x]!.color {
+            piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList.updateValue(true, forKey: cursor)
+            
+            guard piece != nil else { return true }
             piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
+            
             return true
         }
         return false
@@ -209,7 +285,7 @@ extension ChessBoardGame {
 extension ChessBoardGame {
     private func createMovesForKing(pCoor: Coordinate) {
         
-        guard currentChosenPiece != nil else {
+        guard piecesBoard[pCoor.y][pCoor.x] != nil else {
             print("Error chosing piece")
             return
         }
@@ -234,22 +310,30 @@ extension ChessBoardGame {
         _ = appendIfCorrect(pCoor: pCoor, cursor: cursor)
         cursor.y = pCoor.y + 1
         _ = appendIfCorrect(pCoor: pCoor, cursor: cursor)
+        
+        if currentChosenPieceCoordinate == pCoor {
+            removeKingViolatingPositions()
+        }
     }
     
-    private func removeViolatingPositions() {
-        //save chosen piece and movelist
-        let player = activePlayer
-        let chosenPiece = currentChosenPiece
-        let chosenPieceCoordinate = currentChosenPieceCoordinate
-        let moves = currentMoves
-        
-        for i in 0...rows {
-            for j in 0...columns {
-                guard let piece = piecesBoard[i][j] else { continue }
+    private func removeKingViolatingPositions() {
+    
+        for i in 0...(rows-1) {
+            for j in 0...(columns-1) {
+                guard piecesBoard[i][j] != nil && piecesBoard[i][j]?.color != activePlayer else { continue }
                 
-                if piece.color != player {
-                    
+                createMovesForPiece(pCoor: Coordinate(x: j, y: i))
+                let kingCoor = currentChosenPieceCoordinate!
+                let kingMoves = piecesBoard[kingCoor.y][kingCoor.x]!.moveList
+                let enemyPiecesMoves = piecesBoard[i][j]!.possibleAttackMoveList
+                
+                
+                for enemyMove in enemyPiecesMoves.keys {
+                    if kingMoves[enemyMove] == true {
+                        piecesBoard[kingCoor.y][kingCoor.x]!.moveList.updateValue(false, forKey: enemyMove)
+                    }
                 }
+                resetMovesOf(pCoor: Coordinate(x: j, y: i))
             }
         }
     }
@@ -261,7 +345,7 @@ extension ChessBoardGame {
 extension ChessBoardGame {
     private func createMovesForQueen(pCoor: Coordinate) {
         
-        guard currentChosenPiece != nil else {
+        guard piecesBoard[pCoor.y][pCoor.x] != nil else {
             print("Error chosing piece")
             return
         }
@@ -276,7 +360,7 @@ extension ChessBoardGame {
 extension ChessBoardGame {
     private func createMovesForRook(pCoor: Coordinate) {
         
-        guard currentChosenPiece != nil else {
+        guard piecesBoard[pCoor.y][pCoor.x] != nil else {
             print("Error chosing piece")
             return
         }
@@ -315,7 +399,7 @@ extension ChessBoardGame {
 extension ChessBoardGame {
     private func createMovesForBishop(pCoor: Coordinate) {
         
-        guard currentChosenPiece != nil else {
+        guard piecesBoard[pCoor.y][pCoor.x] != nil else {
             print("Error chosing piece")
             return
         }
@@ -364,7 +448,7 @@ extension ChessBoardGame {
 extension ChessBoardGame {
     private func createMovesForKnight(pCoor: Coordinate) {
         
-        guard currentChosenPiece != nil else {
+        guard piecesBoard[pCoor.y][pCoor.x] != nil else {
             print("Error chosing piece")
             return
         }
@@ -400,3 +484,12 @@ extension ChessBoardGame {
     }
 }
 
+
+let startingConfiguration = [[Piece(type: .rook, color: .black), Piece(type: .knight, color: .black), Piece(type: .bishop, color: .black), Piece(type: .queen, color: .black), Piece(type: .king, color: .black), Piece(type: .bishop, color: .black), Piece(type: .knight, color: .black), Piece(type: .rook, color: .black)],
+                             [Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black)],
+                             [nil, nil, nil, nil, nil, nil, nil, nil],
+                             [nil, nil, nil, nil, nil, nil, nil, nil],
+                             [nil, nil, nil, nil, nil, nil, nil, nil],
+                             [nil, nil, nil, nil, nil, nil, nil, nil],
+                             [Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white)],
+                             [Piece(type: .rook, color: .white), Piece(type: .knight, color: .white), Piece(type: .bishop, color: .white), Piece(type: .queen, color: .white), Piece(type: .king, color: .white), Piece(type: .bishop, color: .white), Piece(type: .knight, color: .white), Piece(type: .rook, color: .white)]]
