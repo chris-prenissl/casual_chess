@@ -40,6 +40,11 @@ struct ContentView: View {
                     .buttonStyle(ChessButtonStyle())
                 }
             }
+            if game.checkMate {
+                Text("Schachmatt")
+            } else {
+                Color(.clear)
+            }
         }
     }
 }
