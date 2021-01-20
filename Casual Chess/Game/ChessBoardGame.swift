@@ -9,6 +9,13 @@ import Foundation
 import SwiftUI
 
 class ChessBoardGame: ObservableObject {
+    
+    struct historyElement {
+        var fromFields = [Coordinate : Piece?]()
+        var toFields = [Coordinate : Piece?]()
+        var twoSteppedPawnCoordinate : Coordinate? = nil
+    }
+    
     let rows = 8, columns = 8
     
     @Published var piecesBoard: [[Piece?]] = startingConfiguration
@@ -17,12 +24,14 @@ class ChessBoardGame: ObservableObject {
     var currentChosenPiece: Piece?
     @Published var currentChosenPieceCoordinate: Coordinate?
     
+    var isLeftCastleMove = false
+    var isRightCastleMove = false
+    var isEnPasantMove = false
     var currentTwoSteppedPawnCoordinate: Coordinate?
     var currentTwoSteppedPawnColor: PieceColor?
     @Published var currentMoves = [Coordinate : Bool]()
     
-    var history = [[String : [Coordinate : Piece?]]]()
-    var twoSteppedPawnHistory = [[Coordinate : PieceColor]?]()
+    var history = [historyElement]()
     
     func restart() {
         piecesBoard = startingConfiguration
@@ -32,12 +41,30 @@ class ChessBoardGame: ObservableObject {
         currentTwoSteppedPawnCoordinate = nil
         currentTwoSteppedPawnColor = nil
         currentMoves = [:]
+        history = []
     }
     
     func movePieceTo(x: Int, y: Int) {
         guard let pieceCoordinate = currentChosenPieceCoordinate, let chosenPiece = currentChosenPiece else {
             print("No piece was chosen")
             return
+        }
+        
+        if chosenPiece.type == .pawn {
+            let pawnDir = activePlayer == .white ? -1 : 1
+            if currentTwoSteppedPawnCoordinate == Coordinate(x: x, y: y - pawnDir) {
+                isEnPasantMove = true
+            }
+        } else {
+            isEnPasantMove = false
+        }
+        
+        if chosenPiece.type == .king && !chosenPiece.moved && pieceCoordinate.x - x != 1 {
+            isLeftCastleMove = x - pieceCoordinate.x < 1
+            isRightCastleMove = x - pieceCoordinate.x > 1
+        } else {
+            isLeftCastleMove = false
+            isRightCastleMove = false
         }
         
         saveMove(rootFile: pieceCoordinate, destFile: Coordinate(x: x, y: y))
@@ -48,11 +75,17 @@ class ChessBoardGame: ObservableObject {
         currentChosenPieceCoordinate = Coordinate(x: x, y: y)
         piecesBoard[y][x]?.moved = true
         
-        if chosenPiece.type == .pawn {
-            let pawnDir = activePlayer == .white ? -1 : 1
-            if currentTwoSteppedPawnCoordinate == Coordinate(x: x, y: y - pawnDir) {
-                piecesBoard[currentTwoSteppedPawnCoordinate!.y][currentTwoSteppedPawnCoordinate!.x] = nil
-            }
+        if isEnPasantMove {
+            piecesBoard[currentTwoSteppedPawnCoordinate!.y][currentTwoSteppedPawnCoordinate!.x] = nil
+            isEnPasantMove = false
+        } else if isRightCastleMove {
+            piecesBoard[y][5] = piecesBoard[y][7]
+            piecesBoard[y][7] = nil
+            isRightCastleMove = false
+        } else if isLeftCastleMove {
+            piecesBoard[y][3] = piecesBoard[y][0]
+            piecesBoard[y][0] = nil
+            isLeftCastleMove = false
         }
         
         if ((chosenPiece.color == .white && y == 0) || (chosenPiece.color == .black && y == rows-1)) && chosenPiece.type == .pawn {
@@ -97,55 +130,48 @@ class ChessBoardGame: ObservableObject {
     }
     
     private func saveMove(rootFile: Coordinate, destFile: Coordinate) {
-        var moveHistoryElement = [String : [Coordinate : Piece?]]()
+        var moveHistoryElement = historyElement()
         
-        let from = [rootFile : piecesBoard[rootFile.y][rootFile.x]]
-        var to = [destFile : piecesBoard[destFile.y][destFile.x]]
+        moveHistoryElement.twoSteppedPawnCoordinate = currentTwoSteppedPawnCoordinate
         
-        if currentTwoSteppedPawnCoordinate == nil {
-            twoSteppedPawnHistory.append(nil)
-        } else {
-            var twoSteppedElement = [Coordinate : PieceColor]()
-            twoSteppedElement.updateValue(currentTwoSteppedPawnColor!, forKey: currentTwoSteppedPawnCoordinate!)
-            twoSteppedPawnHistory.append(twoSteppedElement)
-            let direction = currentTwoSteppedPawnColor! == .white ? -1 : 1
-            to.updateValue(piecesBoard[destFile.y + direction][destFile.x], forKey: Coordinate(x: destFile.x, y: destFile.y - direction))
+        moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][rootFile.x], forKey: rootFile)
+        moveHistoryElement.toFields.updateValue(piecesBoard[destFile.y][destFile.x], forKey: destFile)
+        
+        if isEnPasantMove {
+            let direction = activePlayer == .white ? 1 : -1
+            let enPasant = Coordinate(x: destFile.x, y: destFile.y + direction)
+            moveHistoryElement.toFields.updateValue(piecesBoard[enPasant.y][enPasant.x], forKey: enPasant)
+        } else if isRightCastleMove {
+            moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][7], forKey: Coordinate(x: 7, y: rootFile.y))
+            moveHistoryElement.toFields.updateValue(piecesBoard[rootFile.y][5], forKey: Coordinate(x: 5, y: rootFile.y))
+        } else if isLeftCastleMove {
+            moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][0], forKey: Coordinate(x: 0, y: rootFile.y))
+            moveHistoryElement.toFields.updateValue(piecesBoard[rootFile.y][3], forKey: Coordinate(x: 3, y: rootFile.y))
         }
-        
-        
-        moveHistoryElement.updateValue(from, forKey: "from")
-        moveHistoryElement.updateValue(to, forKey: "to")
         history.append(moveHistoryElement)
     }
     
     func restoreLastMove() {
         if !history.isEmpty {
             
-            var lastHistoryElement = history.popLast()!
-            let fromDictionary = lastHistoryElement["from"]!.popFirst()
-            let from = fromDictionary?.key
-            let fromPiece = fromDictionary?.value
-            piecesBoard[from!.y][from!.x] = fromPiece
-            
-            var toDictionary = lastHistoryElement["to"]!.popFirst()
-            var to = toDictionary?.key
-            var toPiece = toDictionary?.value
-            piecesBoard[to!.y][to!.x] = toPiece
-            
-            let twoSteppedPawnElement = twoSteppedPawnHistory.popLast()!
-            currentTwoSteppedPawnCoordinate = twoSteppedPawnElement?.keys.first
-            currentTwoSteppedPawnColor = twoSteppedPawnElement?.values.first
-            if currentTwoSteppedPawnColor != nil {
-                toDictionary = lastHistoryElement["to"]!.popFirst()
-                to = toDictionary?.key
-                toPiece = toDictionary?.value
-                piecesBoard[to!.y][to!.x] = toPiece
-            }
-            
+            let lastHistoryElement = history.popLast()!
             activePlayer = activePlayer == .white ? .black : .white
+            resetCurrentMoves()
             currentChosenPiece = nil
             currentChosenPieceCoordinate = nil
-            currentMoves = [:]
+            
+            if currentTwoSteppedPawnCoordinate != nil {
+                currentTwoSteppedPawnColor = activePlayer == .white ? .black : .white
+            } else {
+                currentTwoSteppedPawnColor = nil
+            }
+            
+            for file in lastHistoryElement.fromFields {
+                piecesBoard[file.key.y][file.key.x] = file.value
+            }
+            for file in lastHistoryElement.toFields {
+                piecesBoard[file.key.y][file.key.x] = file.value
+            }
         }
     }
     
@@ -310,6 +336,31 @@ extension ChessBoardGame {
         _ = appendIfCorrect(pCoor: pCoor, cursor: cursor)
         cursor.y = pCoor.y + 1
         _ = appendIfCorrect(pCoor: pCoor, cursor: cursor)
+        
+        if piecesBoard[pCoor.y][0]?.moved == false && !piecesBoard[pCoor.y][pCoor.x]!.moved {
+            var emptyFiles = true
+            for i in stride(from: pCoor.x-1, through: 1, by: -1) {
+                if piecesBoard[pCoor.y][i] != nil {
+                    emptyFiles = false
+                    break
+                }
+            }
+            if emptyFiles {
+                _ = appendIfCorrect(pCoor: pCoor, cursor: Coordinate(x: 2, y: pCoor.y))
+            }
+        }
+        if piecesBoard[pCoor.y][7]?.moved == false && !piecesBoard[pCoor.y][pCoor.x]!.moved {
+            var emptyFiles = true
+            for i in stride(from: pCoor.x+1, through: 6, by: 1) {
+                if piecesBoard[pCoor.y][i] != nil {
+                    emptyFiles = false
+                    break
+                }
+            }
+            if emptyFiles {
+                _ = appendIfCorrect(pCoor: pCoor, cursor: Coordinate(x: 6, y: pCoor.y))
+            }
+        }
         
         if currentChosenPieceCoordinate == pCoor {
             removeKingViolatingPositions()
