@@ -22,5 +22,4 @@ struct Piece {
     }
     var moved = false
     var moveList = [Coordinate : Bool]()
-    var possibleAttackMoveList = [Coordinate : Bool]()
 }

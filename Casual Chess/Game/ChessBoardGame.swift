@@ -14,162 +14,185 @@ class ChessBoardGame: ObservableObject {
         var fromFields = [Coordinate : Piece?]()
         var toFields = [Coordinate : Piece?]()
         var twoSteppedPawnCoordinate : Coordinate? = nil
-        var kingHasToMove = false
     }
     
     let rows = 8, columns = 8
     
     @Published var piecesBoard: [[Piece?]] = startingConfiguration
+    var history = [historyElement]()
     
+    //player
     @Published var activePlayer: PieceColor = .white
-    var currentChosenPiece: Piece?
     @Published var currentChosenPieceCoordinate: Coordinate?
+    @Published var currentMoves = [Coordinate : Bool]()
     
+    //game states
     @Published var kingHasToMove = false
     @Published var checkMate = false
+    @Published var draw = false
+    
+    //move type
     var isLeftCastleMove = false
     var isRightCastleMove = false
     var isEnPasantMove = false
     var currentTwoSteppedPawnCoordinate: Coordinate?
-    var currentTwoSteppedPawnColor: PieceColor?
-    @Published var currentMoves = [Coordinate : Bool]()
     
-    var history = [historyElement]()
+        
+    init() {
+        preparePlayPhase()
+    }
     
     func restart() {
         piecesBoard = startingConfiguration
+        history = []
         activePlayer = .white
-        currentChosenPiece = nil
         currentChosenPieceCoordinate = nil
-        currentTwoSteppedPawnCoordinate = nil
-        currentTwoSteppedPawnColor = nil
+        currentMoves = [:]
         kingHasToMove = false
         checkMate = false
-        currentMoves = [:]
-        history = []
+        draw = false
+        isLeftCastleMove = false
+        isRightCastleMove = false
+        isEnPasantMove = false
+        currentTwoSteppedPawnCoordinate = nil
+        
+        preparePlayPhase()
+    }
+    
+    private func preparePlayPhase() {
+        if createMovesForActivePlayer() {
+            check()
+        } else {
+            draw = true
+        }
+    }
+    
+    private func createMovesForActivePlayer() -> Bool {
+        var count = 0
+        for i in 0...(rows-1) {
+            for j in 0...(columns-1) {
+                guard let piece = piecesBoard[i][j] else { continue }
+                guard piece.color == activePlayer else { continue }
+                
+                createMovesForPiece(pCoor: Coordinate(x: j, y: i), isActivePlayer: true)
+                
+                count += piecesBoard[i][j]!.moveList.count
+            }
+        }
+        return count > 0
+    }
+    
+    private func check() {
+        kingHasToMove = false
+        guard let kCoor = getKingCoor() else {
+            print("No king found")
+            return
+        }
+        if isKingViolated(kCoor: kCoor, isActivePlayer: true) {
+            currentChosenPieceCoordinate = kCoor
+            createMovesForKing(pCoor: kCoor)
+            currentMoves = getMovesOf(coordinate: kCoor)
+            kingHasToMove = true
+            if currentMoves.isEmpty {
+                checkMate = true
+            }
+        }
+    }
+    
+    private func getMovesOf(coordinate: Coordinate) -> [Coordinate : Bool] {
+        guard let piece = piecesBoard[coordinate.y][coordinate.x] else { return [:] }
+        return piece.moveList
     }
     
     func tryToMovePieceTo(x: Int, y: Int) {
         
-        guard let pieceCoordinate = currentChosenPieceCoordinate, let chosenPiece = currentChosenPiece else {
+        guard let pieceCoordinate = currentChosenPieceCoordinate else {
             print("No piece was chosen")
             return
         }
         
-        if chosenPiece.type == .pawn {
-            let pawnDir = activePlayer == .white ? -1 : 1
-            if currentTwoSteppedPawnCoordinate == Coordinate(x: x, y: y - pawnDir) {
-                isEnPasantMove = true
-            }
-        } else {
-            isEnPasantMove = false
-        }
+        let chosenPiece = getPiece(at: pieceCoordinate)!
+        let destination = Coordinate(x: x, y: y)
+        setState(chosenPiece: chosenPiece, pieceCoordinate: pieceCoordinate, destination: destination)
+        saveMove(rootFile: pieceCoordinate, destFile: destination)
+        move()
         
-        if chosenPiece.type == .king && !chosenPiece.moved && pieceCoordinate.x - x != 1 {
-            isLeftCastleMove = x - pieceCoordinate.x < 1
-            isRightCastleMove = x - pieceCoordinate.x > 1
-        } else {
-            isLeftCastleMove = false
-            isRightCastleMove = false
-        }
-        
-        saveMove(rootFile: pieceCoordinate, destFile: Coordinate(x: x, y: y))
-        
-        piecesBoard[y][x] = chosenPiece
-        piecesBoard[pieceCoordinate.y][pieceCoordinate.x] = nil
-        loop : for i in 0...columns-1 {
-            for j in 0...rows-1 {
-                if piecesBoard[j][i]?.color == activePlayer && piecesBoard[j][i]?.type == .king {
-                    createKingViolatingPositions(kCoor: Coordinate(x: i, y: j))
-                    break loop
-                }
-            }
-        }
-        if kingHasToMove {
-            restoreLastMove()
-            kingHasToMove = false
-            activePlayer = activePlayer == .white ? .black : .white
-            return
-        }
-        
-        currentChosenPieceCoordinate = Coordinate(x: x, y: y)
-        piecesBoard[y][x]?.moved = true
-        
-        if isEnPasantMove {
-            piecesBoard[currentTwoSteppedPawnCoordinate!.y][currentTwoSteppedPawnCoordinate!.x] = nil
-            isEnPasantMove = false
-        } else if isRightCastleMove {
-            piecesBoard[y][5] = piecesBoard[y][7]
-            piecesBoard[y][7] = nil
-            isRightCastleMove = false
-        } else if isLeftCastleMove {
-            piecesBoard[y][3] = piecesBoard[y][0]
-            piecesBoard[y][0] = nil
-            isLeftCastleMove = false
-        }
-        
-        if ((chosenPiece.color == .white && y == 0) || (chosenPiece.color == .black && y == rows-1)) && chosenPiece.type == .pawn {
-            piecesBoard[y][x]?.type = .queen
-        }
-        
-        if chosenPiece.type == .pawn && abs(y - pieceCoordinate.y) > 1 {
-            currentTwoSteppedPawnCoordinate = Coordinate(x: x, y: y)
-            currentTwoSteppedPawnColor = chosenPiece.color
-        } else {
-            currentTwoSteppedPawnCoordinate = nil
-            currentTwoSteppedPawnColor = nil
-        }
-        
-        unsetChosenPiece()
+        //prepare for next player
         setNextPlayer()
-        loop : for i in 0...columns-1 {
-            for j in 0...rows-1 {
-                if piecesBoard[j][i]?.color == activePlayer && piecesBoard[j][i]?.type == .king {
-                    createKingViolatingPositions(kCoor: Coordinate(x: i, y: j))
-                    checkCheckMate(kCoor: Coordinate(x: i, y: j))
-                    break loop
-                }
-            }
-        }
-    }
-    
-    func checkCheckMate(kCoor: Coordinate) {
-        if piecesBoard[kCoor.y][kCoor.x]!.moveList.isEmpty && kingHasToMove{
-            checkMate = true
-        } else if kingHasToMove {
-            for move in piecesBoard[kCoor.y][kCoor.x]!.moveList {
-                if move.value == true {
-                    checkMate = false
-                    return
-                }
-            }
-            checkMate = true
-        }
+        preparePlayPhase()
     }
     
     func setCurrentChosenPiece(coordinate: Coordinate) {
-        guard let piece = piecesBoard[coordinate.y][coordinate.x] else {
-            print("Error occured \(coordinate) is out of bounds")
+        currentChosenPieceCoordinate = coordinate
+        currentMoves = piecesBoard[coordinate.y][coordinate.x]!.moveList
+    }
+    
+    private func setState(chosenPiece: Piece, pieceCoordinate: Coordinate, destination: Coordinate) {
+        isEnPasantMove = isEnPasantMove(chosenPiece: chosenPiece, coordinate: destination)
+        isLeftCastleMove = isCastleMoveLeft(chosenPieceCoordinate: pieceCoordinate, destination: destination)
+        isRightCastleMove = isCastleMoveRight(chosenPieceCoordinate: pieceCoordinate, destination: destination)
+        currentTwoSteppedPawnCoordinate = twoSteppedPawnMove(from: pieceCoordinate, destination: destination)
+    }
+    
+    private func move() {
+        guard let lastHistoryElement = history.last else {
+            print("No element in history")
             return
         }
+        var from = lastHistoryElement.fromFields
+        var to = lastHistoryElement.toFields
         
-        currentChosenPiece = piece
-        currentChosenPieceCoordinate = coordinate
-        resetCurrentMoves()
-        resetMovesOf(pCoor: coordinate)
-        createMovesForPiece(pCoor: coordinate)
-        setCurrentMovesOf(pCoor: coordinate)
+        while !from.isEmpty {
+            let fromField = from.popFirst()!
+            piecesBoard[fromField.key.y][fromField.key.x] = nil
+            let toField = to.popFirst()!
+            piecesBoard[toField.key.y][toField.key.x] = fromField.value
+        }
+    }
+    
+    private func twoSteppedPawnMove(from: Coordinate, destination: Coordinate) -> Coordinate? {
+        if piecesBoard[from.y][from.x]?.type == .pawn && abs(destination.y - from.y) == 2 {
+            return destination
+        }
+        return nil
+    }
+    
+    private func isCastleMoveLeft(chosenPieceCoordinate: Coordinate, destination: Coordinate) -> Bool {
+        guard let piece = piecesBoard[chosenPieceCoordinate.y][chosenPieceCoordinate.x] else {
+            print("Error chosing piece")
+            return false
+        }
+        if piece.type == .king && !piece.moved && chosenPieceCoordinate.x - destination.x == 2 {
+            guard let possibleRook = piecesBoard[destination.y][0] else { return false }
+            return possibleRook.type == .rook && possibleRook.color == activePlayer && !possibleRook.moved
+        }
+        return false
+    }
+    
+    private func isCastleMoveRight(chosenPieceCoordinate: Coordinate, destination: Coordinate) -> Bool {
+        guard let piece = piecesBoard[chosenPieceCoordinate.y][chosenPieceCoordinate.x] else {
+            print("Error chosing piece")
+            return false
+        }
+        if piece.type == .king && !piece.moved && destination.x - chosenPieceCoordinate.x == 2 {
+            guard let possibleRook = piecesBoard[destination.y][columns-1] else { return false }
+            return possibleRook.type == .rook && possibleRook.color == activePlayer && !possibleRook.moved
+        }
+        return false
+    }
+    
+    private func isEnPasantMove(chosenPiece: Piece, coordinate: Coordinate) -> Bool {
+        if chosenPiece.type == .pawn {
+            let enemyPawnDir = activePlayer == .white ? 1 : -1
+            if currentTwoSteppedPawnCoordinate == Coordinate(x: coordinate.x, y: coordinate.y + enemyPawnDir) {
+                return true
+            }
+        }
+        return false
     }
     
     private func setNextPlayer() {
         activePlayer = activePlayer == .white ? .black : .white
-    }
-    
-    private func unsetChosenPiece() {
-        resetMovesOf(pCoor: currentChosenPieceCoordinate!)
-        resetCurrentMoves()
-        currentChosenPiece = nil
-        currentChosenPieceCoordinate = nil
     }
     
     private func saveMove(rootFile: Coordinate, destFile: Coordinate) {
@@ -179,12 +202,13 @@ class ChessBoardGame: ObservableObject {
         
         moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][rootFile.x], forKey: rootFile)
         moveHistoryElement.toFields.updateValue(piecesBoard[destFile.y][destFile.x], forKey: destFile)
-        moveHistoryElement.kingHasToMove = kingHasToMove
         
         if isEnPasantMove {
             let direction = activePlayer == .white ? 1 : -1
-            let enPasant = Coordinate(x: destFile.x, y: destFile.y + direction)
-            moveHistoryElement.toFields.updateValue(piecesBoard[enPasant.y][enPasant.x], forKey: enPasant)
+            let enPasantFrom = Coordinate(x: destFile.x, y: destFile.y - direction)
+            let enPasantDir = Coordinate(x: destFile.x, y: destFile.y + direction)
+            moveHistoryElement.fromFields.updateValue(piecesBoard[enPasantFrom.y][enPasantFrom.x], forKey: enPasantFrom)
+            moveHistoryElement.toFields.updateValue(piecesBoard[enPasantDir.y][enPasantDir.x], forKey: enPasantDir)
         } else if isRightCastleMove {
             moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][7], forKey: Coordinate(x: 7, y: rootFile.y))
             moveHistoryElement.toFields.updateValue(piecesBoard[rootFile.y][5], forKey: Coordinate(x: 5, y: rootFile.y))
@@ -201,15 +225,8 @@ class ChessBoardGame: ObservableObject {
             let lastHistoryElement = history.popLast()!
             activePlayer = activePlayer == .white ? .black : .white
             resetCurrentMoves()
-            currentChosenPiece = nil
             currentChosenPieceCoordinate = nil
-            checkMate = false
-            
-            if currentTwoSteppedPawnCoordinate != nil {
-                currentTwoSteppedPawnColor = activePlayer == .white ? .black : .white
-            } else {
-                currentTwoSteppedPawnColor = nil
-            }
+            currentTwoSteppedPawnCoordinate = lastHistoryElement.twoSteppedPawnCoordinate
             
             for file in lastHistoryElement.fromFields {
                 piecesBoard[file.key.y][file.key.x] = file.value
@@ -220,9 +237,15 @@ class ChessBoardGame: ObservableObject {
         }
     }
     
-    private func createMovesForPiece(pCoor: Coordinate) {
+    private func createMovesForPiece(pCoor: Coordinate, isActivePlayer: Bool) {
+        guard piecesBoard[pCoor.y][pCoor.x] != nil else {
+            print("Choosing piece went wrong")
+            return
+        }
         
-        switch piecesBoard[pCoor.y][pCoor.x]?.type {
+        piecesBoard[pCoor.y][pCoor.x]!.moveList = [:]
+        
+        switch piecesBoard[pCoor.y][pCoor.x]!.type {
             case .pawn:
                 createMovesForPawn(pCoor: pCoor)
                 break
@@ -241,8 +264,26 @@ class ChessBoardGame: ObservableObject {
             case .knight:
                 createMovesForKnight(pCoor: pCoor)
                 break
-            default:
-            break
+        }
+        removeKingViolatingMoves(pCoor: pCoor, isActivePlayer: true)
+    }
+    
+    private func removeKingViolatingMoves(pCoor: Coordinate, isActivePlayer: Bool) {
+        let moves = getMovesOf(coordinate: pCoor)
+        
+        for move in moves {
+            if move.value {
+                var isViolating = false
+                setState(chosenPiece: getPiece(at: pCoor)!, pieceCoordinate: pCoor, destination: move.key)
+                saveMove(rootFile: pCoor, destFile: move.key)
+                self.move()
+                if isKingViolated(kCoor: getKingCoor()!, isActivePlayer: false) {
+                    isViolating = true
+                }
+                setNextPlayer()
+                restoreLastMove()
+                piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(!isViolating, forKey: move.key)
+            }
         }
     }
     
@@ -250,27 +291,16 @@ class ChessBoardGame: ObservableObject {
         currentMoves = [:]
     }
     
-    private func resetMovesOf(pCoor: Coordinate) {
-        piecesBoard[pCoor.y][pCoor.x]!.moveList = [:]
-        piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList = [:]
-    }
-    
-    private func setCurrentMovesOf(pCoor: Coordinate) {
-        currentMoves = piecesBoard[pCoor.y][pCoor.x]!.moveList
-    }
-    
     private func appendIfCorrect(pCoor: Coordinate, cursor: Coordinate) -> Bool {
         if isCoordinateOutOfBounds(cursor) { return false }
         
         guard let destPiece = piecesBoard[cursor.y][cursor.x] else {
             piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
-            piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList.updateValue(true, forKey: cursor)
             return true
         }
         
         if destPiece.color != piecesBoard[pCoor.y][pCoor.x]!.color  {
             piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
-            piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList.updateValue(true, forKey: cursor)
             return false
         }
         return false
@@ -278,6 +308,18 @@ class ChessBoardGame: ObservableObject {
     
     private func isCoordinateOutOfBounds(_ coordinate: Coordinate) -> Bool {
         return coordinate.x < 0 || coordinate.x > columns-1 || coordinate.y < 0 || coordinate.y > rows-1
+    }
+    
+    private func getColorOfPiece(at: Coordinate) -> PieceColor {
+        guard let piece = piecesBoard[at.y][at.x] else {
+            print("no piece at coordinate")
+            return .black
+        }
+        return piece.color
+    }
+    
+    private func getPiece(at: Coordinate) -> Piece? {
+        return piecesBoard[at.y][at.x]
     }
 }
 
@@ -297,22 +339,28 @@ extension ChessBoardGame {
         
 
         cursor.x = pCoor.x - 1
-        if currentTwoSteppedPawnCoordinate == cursor && currentTwoSteppedPawnColor != piece.color {
-            cursor.y = pCoor.y + direction
-            _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
+        
+        if currentTwoSteppedPawnCoordinate == cursor {
+            if getColorOfPiece(at: currentTwoSteppedPawnCoordinate!) != piece.color {
+                cursor.y = pCoor.y + direction
+                _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
+            }
         }
+        
         
         cursor.x = pCoor.x + 1
         cursor.y = pCoor.y
-        if currentTwoSteppedPawnCoordinate == cursor && currentTwoSteppedPawnColor != piece.color {
-            cursor.y = pCoor.y + direction
-            _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
+        if currentTwoSteppedPawnCoordinate == cursor {
+            if getColorOfPiece(at: currentTwoSteppedPawnCoordinate!) != piece.color {
+                cursor.y = pCoor.y + direction
+                _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
+            }
         }
 
         cursor = Coordinate(x: pCoor.x, y: pCoor.y + direction)
         _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
-        cursor.y += direction
         if !piece.moved {
+            cursor.y += direction
             _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
         }
         
@@ -340,7 +388,6 @@ extension ChessBoardGame {
         let piece = piecesBoard[cursor.y][cursor.x]
             
         if piece?.color != piecesBoard[pCoor.y][pCoor.x]!.color {
-            piecesBoard[pCoor.y][pCoor.x]!.possibleAttackMoveList.updateValue(true, forKey: cursor)
             
             guard piece != nil else { return true }
             piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
@@ -406,55 +453,39 @@ extension ChessBoardGame {
                 _ = appendIfCorrect(pCoor: pCoor, cursor: Coordinate(x: 6, y: pCoor.y))
             }
         }
-        
-        if currentChosenPieceCoordinate == pCoor {
-            removeKingViolatingPositions()
-        }
     }
     
-    private func removeKingViolatingPositions() {
-    
-        for i in 0...(rows-1) {
-            for j in 0...(columns-1) {
-                guard piecesBoard[i][j] != nil && piecesBoard[i][j]?.color != activePlayer else { continue }
-                
-                createMovesForPiece(pCoor: Coordinate(x: j, y: i))
-                let kingCoor = currentChosenPieceCoordinate!
-                let kingMoves = piecesBoard[kingCoor.y][kingCoor.x]!.moveList
-                let enemyPiecesMoves = piecesBoard[i][j]!.possibleAttackMoveList
-                
-                
-                for enemyMove in enemyPiecesMoves.keys {
-                    if kingMoves[enemyMove] == true {
-                        piecesBoard[kingCoor.y][kingCoor.x]!.moveList.updateValue(false, forKey: enemyMove)
-                    }
-                }
-                resetMovesOf(pCoor: Coordinate(x: j, y: i))
-            }
-        }
-    }
-    
-    private func createKingViolatingPositions(kCoor: Coordinate) {
-        kingHasToMove = false
-        loop : for j in 0...(rows-1) {
+    private func isKingViolated(kCoor: Coordinate, isActivePlayer: Bool) -> Bool {
+        for j in 0...(rows-1) {
             for i in 0...(columns-1) {
                 guard piecesBoard[j][i] != nil else { continue }
                 guard piecesBoard[j][i]!.color != activePlayer else { continue }
                 
-                createMovesForPiece(pCoor: Coordinate(x: i, y: j))
+                if isActivePlayer {
+                    createMovesForPiece(pCoor: Coordinate(x: i, y: j), isActivePlayer: false)
+                }
                 
                 for move in piecesBoard[j][i]!.moveList {
                     if move.key == kCoor && move.value {
-                        kingHasToMove = true
-                        setCurrentChosenPiece(coordinate: kCoor)
-                        break
+                        return true
                     }
                 }
-                
-                resetMovesOf(pCoor: Coordinate(x: i, y: j))
-                if kingHasToMove { break loop }
             }
         }
+        return false
+    }
+    
+    private func getKingCoor() -> Coordinate? {
+        for j in 0...(rows-1) {
+            for i in 0...(columns-1) {
+                guard let piece = piecesBoard[j][i] else { continue }
+                guard piece.color == activePlayer else { continue }
+                guard piece.type == .king else { continue }
+                
+                return Coordinate(x: i, y: j)
+            }
+        }
+        return nil
     }
 }
 

@@ -58,6 +58,7 @@
 		214FDCD725B475B40062240D /* MoveLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoveLayer.swift; sourceTree = "<group>"; };
 		214FDCDC25B479BC0062240D /* PieceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PieceView.swift; sourceTree = "<group>"; };
 		214FDD1425B725A40062240D /* ChessButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessButtonStyle.swift; sourceTree = "<group>"; };
+		214FDD1C25BC6F1D0062240D /* Casual Chess.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Casual Chess.entitlements"; sourceTree = "<group>"; };
 		21E152F625AB907700CD9FF3 /* Piece.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Piece.swift; sourceTree = "<group>"; };
 		21E152FB25AB930300CD9FF3 /* ChessBoardGame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessBoardGame.swift; sourceTree = "<group>"; };
 		21E1530025ABA16E00CD9FF3 /* Colors.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Colors.xcassets; sourceTree = "<group>"; };
@@ -111,6 +112,7 @@
 		214DE98025AB7E2A004793BF /* Casual Chess */ = {
 			isa = PBXGroup;
 			children = (
+				214FDD1C25BC6F1D0062240D /* Casual Chess.entitlements */,
 				214FDCE425B47A0E0062240D /* Math */,
 				219299B125B45486003C3A5D /* Game */,
 				219299B025B45453003C3A5D /* Assets and Configurations */,
@@ -481,6 +483,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Casual Chess/Casual Chess.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
@@ -493,6 +496,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "snakept.Casual-Chess";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -503,6 +508,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Casual Chess/Casual Chess.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
@@ -516,6 +522,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "snakept.Casual-Chess";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTS_MACCATALYST = YES;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
