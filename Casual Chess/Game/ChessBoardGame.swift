@@ -60,21 +60,21 @@ class ChessBoardGame: ObservableObject {
     }
     
     private func preparePlayPhase() {
-        if createMovesForActivePlayer() {
+        if createMovesForPlayer(isActive: true) {
             check()
         } else {
             draw = true
         }
     }
     
-    private func createMovesForActivePlayer() -> Bool {
+    private func createMovesForPlayer(isActive: Bool) -> Bool {
         var count = 0
         for i in 0...(rows-1) {
             for j in 0...(columns-1) {
                 guard let piece = piecesBoard[i][j] else { continue }
                 guard piece.color == activePlayer else { continue }
                 
-                createMovesForPiece(pCoor: Coordinate(x: j, y: i), isActivePlayer: true)
+                createMovesForPiece(pCoor: Coordinate(x: j, y: i), isAttacking: isActive)
                 
                 count += piecesBoard[i][j]!.moveList.count
             }
@@ -88,12 +88,18 @@ class ChessBoardGame: ObservableObject {
             print("No king found")
             return
         }
-        if isKingViolated(kCoor: kCoor, isActivePlayer: true) {
+        if isKingViolated(kCoor: kCoor) {
             currentChosenPieceCoordinate = kCoor
             createMovesForKing(pCoor: kCoor)
+            removeKingViolatingMoves(pCoor: kCoor)
+            currentChosenPieceCoordinate = kCoor
             currentMoves = getMovesOf(coordinate: kCoor)
             kingHasToMove = true
-            if currentMoves.isEmpty {
+            var kingCannotMove = true
+            for move in currentMoves {
+                if move.value { kingCannotMove = false}
+            }
+            if kingCannotMove {
                 checkMate = true
             }
         }
@@ -115,6 +121,7 @@ class ChessBoardGame: ObservableObject {
         let destination = Coordinate(x: x, y: y)
         setState(chosenPiece: chosenPiece, pieceCoordinate: pieceCoordinate, destination: destination)
         saveMove(rootFile: pieceCoordinate, destFile: destination)
+        piecesBoard[pieceCoordinate.y][pieceCoordinate.x]!.moved = true
         move()
         
         //prepare for next player
@@ -219,8 +226,15 @@ class ChessBoardGame: ObservableObject {
         history.append(moveHistoryElement)
     }
     
-    func restoreLastMove() {
+    func goToLastGameState() {
+        restoreLastMove()
+        preparePlayPhase()
+    }
+    
+    private func restoreLastMove() {
         if !history.isEmpty {
+            draw = false
+            checkMate = false
             
             let lastHistoryElement = history.popLast()!
             activePlayer = activePlayer == .white ? .black : .white
@@ -237,7 +251,9 @@ class ChessBoardGame: ObservableObject {
         }
     }
     
-    private func createMovesForPiece(pCoor: Coordinate, isActivePlayer: Bool) {
+    
+    
+    private func createMovesForPiece(pCoor: Coordinate, isAttacking: Bool) {
         guard piecesBoard[pCoor.y][pCoor.x] != nil else {
             print("Choosing piece went wrong")
             return
@@ -265,19 +281,28 @@ class ChessBoardGame: ObservableObject {
                 createMovesForKnight(pCoor: pCoor)
                 break
         }
-        removeKingViolatingMoves(pCoor: pCoor, isActivePlayer: true)
+        if isAttacking {
+            removeKingViolatingMoves(pCoor: pCoor)
+        }
     }
     
-    private func removeKingViolatingMoves(pCoor: Coordinate, isActivePlayer: Bool) {
+    
+    private func removeKingViolatingMoves(pCoor: Coordinate) {
         let moves = getMovesOf(coordinate: pCoor)
         
         for move in moves {
             if move.value {
                 var isViolating = false
-                setState(chosenPiece: getPiece(at: pCoor)!, pieceCoordinate: pCoor, destination: move.key)
+                let piece = getPiece(at: pCoor)!
+                setState(chosenPiece: piece, pieceCoordinate: pCoor, destination: move.key)
                 saveMove(rootFile: pCoor, destFile: move.key)
                 self.move()
-                if isKingViolated(kCoor: getKingCoor()!, isActivePlayer: false) {
+                setNextPlayer()
+                _ = createMovesForPlayer(isActive: false)
+                
+                setNextPlayer()
+                let kingCoordinate = getKingCoor()!
+                if isKingViolated(kCoor: kingCoordinate) {
                     isViolating = true
                 }
                 setNextPlayer()
@@ -359,9 +384,11 @@ extension ChessBoardGame {
 
         cursor = Coordinate(x: pCoor.x, y: pCoor.y + direction)
         _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
-        if !piece.moved {
-            cursor.y += direction
-            _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
+        cursor.y += direction
+        if !piece.moved && !isCoordinateOutOfBounds(cursor) {
+            if piecesBoard[cursor.y][cursor.x] == nil {
+                _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
+            }
         }
         
         cursor.x = pCoor.x + 1
@@ -455,15 +482,13 @@ extension ChessBoardGame {
         }
     }
     
-    private func isKingViolated(kCoor: Coordinate, isActivePlayer: Bool) -> Bool {
+    private func isKingViolated(kCoor: Coordinate) -> Bool {
         for j in 0...(rows-1) {
             for i in 0...(columns-1) {
                 guard piecesBoard[j][i] != nil else { continue }
                 guard piecesBoard[j][i]!.color != activePlayer else { continue }
                 
-                if isActivePlayer {
-                    createMovesForPiece(pCoor: Coordinate(x: i, y: j), isActivePlayer: false)
-                }
+                createMovesForPiece(pCoor: Coordinate(x: i, y: j), isAttacking: false)
                 
                 for move in piecesBoard[j][i]!.moveList {
                     if move.key == kCoor && move.value {

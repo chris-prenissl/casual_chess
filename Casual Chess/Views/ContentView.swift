@@ -33,7 +33,7 @@ struct ContentView: View {
                     }
                     .buttonStyle(ChessButtonStyle())
                     Button(action: {
-                        game.restoreLastMove()
+                        game.goToLastGameState()
                     } , label: {
                         Image(systemName: "arrowshape.turn.up.backward.fill")
                     })
