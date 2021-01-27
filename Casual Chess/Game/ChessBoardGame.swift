@@ -120,8 +120,8 @@ class ChessBoardGame: ObservableObject {
         let chosenPiece = getPiece(at: pieceCoordinate)!
         let destination = Coordinate(x: x, y: y)
         setState(chosenPiece: chosenPiece, pieceCoordinate: pieceCoordinate, destination: destination)
-        saveMove(rootFile: pieceCoordinate, destFile: destination)
         piecesBoard[pieceCoordinate.y][pieceCoordinate.x]!.moved = true
+        saveMove(rootFile: pieceCoordinate, destFile: destination)
         move()
         
         //prepare for next player
@@ -386,7 +386,7 @@ extension ChessBoardGame {
         _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
         cursor.y += direction
         if !piece.moved && !isCoordinateOutOfBounds(cursor) {
-            if piecesBoard[cursor.y][cursor.x] == nil {
+            if piecesBoard[cursor.y - direction][cursor.x] == nil {
                 _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
             }
         }
