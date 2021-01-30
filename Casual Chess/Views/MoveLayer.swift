@@ -23,7 +23,7 @@ struct ChessPlayGrid: View {
                     ForEach(0..<game.columns, id: \.self) { column in
                         let tapGesture = TapGesture(count: 1)
                             .onEnded {
-                                if !game.kingHasToMove && game.activePlayer == game.piecesBoard[row][column]?.color {
+                                if !game.kingHasToMove && !game.draw && game.activePlayer == game.piecesBoard[row][column]?.color {
                                     game.setCurrentChosenPiece(coordinate: Coordinate(x: column, y: row))
                                 } else if game.currentMoves[Coordinate(x: column, y: row)] ?? false {
                                     game.tryToMovePieceTo(x: column, y: row)

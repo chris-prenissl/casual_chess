@@ -11,14 +11,23 @@ import SwiftUI
 class ChessBoardGame: ObservableObject {
     
     struct historyElement {
-        var fromFields = [Coordinate : Piece?]()
-        var toFields = [Coordinate : Piece?]()
+        var fromFields = [field]()
+        var toFields = [field]()
         var twoSteppedPawnCoordinate : Coordinate? = nil
+        
+        struct field {
+            var coordinate: Coordinate
+            var piece: Piece?
+        }
     }
+    
+    var testConfig: [[Piece?]] = Array(repeating: Array(repeating: nil, count: 8), count: 8)
+    
     
     let rows = 8, columns = 8
     
-    @Published var piecesBoard: [[Piece?]] = startingConfiguration
+    @Published var piecesBoard: [[Piece?]]
+    var startingConfiguration = normalConfiguration
     var history = [historyElement]()
     
     //player
@@ -27,6 +36,7 @@ class ChessBoardGame: ObservableObject {
     @Published var currentMoves = [Coordinate : Bool]()
     
     //game states
+    @Published var pawnReplacementCoordinate: Coordinate? = nil
     @Published var kingHasToMove = false
     @Published var checkMate = false
     @Published var draw = false
@@ -35,10 +45,19 @@ class ChessBoardGame: ObservableObject {
     var isLeftCastleMove = false
     var isRightCastleMove = false
     var isEnPasantMove = false
-    var currentTwoSteppedPawnCoordinate: Coordinate?
     
         
     init() {
+        testConfig[0][4] = Piece(type: .king, color: .black)
+        testConfig[7][4] = Piece(type: .king, color: .white)
+//        testConfig[1][0] = Piece(type: .rook, color: .white)
+//        testConfig[7][3] = Piece(type: .rook, color: .white)
+//        testConfig[7][5] = Piece(type: .rook, color: .white)
+//        testConfig[5][4] = Piece(type: .rook, color: .white)
+        testConfig[1][7] = Piece(type: .pawn, color: .black)
+        testConfig[3][6] = Piece(type: .pawn, color: .white)
+        startingConfiguration = normalConfiguration
+        piecesBoard = startingConfiguration
         preparePlayPhase()
     }
     
@@ -54,17 +73,14 @@ class ChessBoardGame: ObservableObject {
         isLeftCastleMove = false
         isRightCastleMove = false
         isEnPasantMove = false
-        currentTwoSteppedPawnCoordinate = nil
         
         preparePlayPhase()
     }
     
     private func preparePlayPhase() {
-        if createMovesForPlayer(isActive: true) {
-            check()
-        } else {
-            draw = true
-        }
+        let cannotMove = !createMovesForPlayer(isActive: true)
+        check()
+        draw = cannotMove
     }
     
     private func createMovesForPlayer(isActive: Bool) -> Bool {
@@ -76,7 +92,11 @@ class ChessBoardGame: ObservableObject {
                 
                 createMovesForPiece(pCoor: Coordinate(x: j, y: i), isAttacking: isActive)
                 
-                count += piecesBoard[i][j]!.moveList.count
+                for move in piecesBoard[i][j]!.moveList {
+                    if move.value {
+                        count += 1
+                    }
+                }
             }
         }
         return count > 0
@@ -120,11 +140,20 @@ class ChessBoardGame: ObservableObject {
         let chosenPiece = getPiece(at: pieceCoordinate)!
         let destination = Coordinate(x: x, y: y)
         setState(chosenPiece: chosenPiece, pieceCoordinate: pieceCoordinate, destination: destination)
-        piecesBoard[pieceCoordinate.y][pieceCoordinate.x]!.moved = true
         saveMove(rootFile: pieceCoordinate, destFile: destination)
         move()
         
+        pawnReplacementCoordinate = checkIfNeededToChoosePawnReplacement()
+        
+        guard pawnReplacementCoordinate == nil else { return }
         //prepare for next player
+        setNextPlayer()
+        preparePlayPhase()
+    }
+    
+    func replace(at: Coordinate, with type: PieceType) {
+        piecesBoard[at.y][at.x]!.type = type
+        pawnReplacementCoordinate = nil
         setNextPlayer()
         preparePlayPhase()
     }
@@ -138,7 +167,30 @@ class ChessBoardGame: ObservableObject {
         isEnPasantMove = isEnPasantMove(chosenPiece: chosenPiece, coordinate: destination)
         isLeftCastleMove = isCastleMoveLeft(chosenPieceCoordinate: pieceCoordinate, destination: destination)
         isRightCastleMove = isCastleMoveRight(chosenPieceCoordinate: pieceCoordinate, destination: destination)
-        currentTwoSteppedPawnCoordinate = twoSteppedPawnMove(from: pieceCoordinate, destination: destination)
+    }
+    
+    private func checkIfNeededToChoosePawnReplacement() -> Coordinate? {
+        
+        if activePlayer == .white {
+            for i in 0..<columns {
+                guard let piece = piecesBoard[0][i] else { continue }
+                
+                if piece.color == .white && piece.type == .pawn {
+                    return Coordinate(x: i, y: 0)
+                }
+            }
+        } else {
+            for i in 0..<columns {
+                guard let piece = piecesBoard[rows-1][i] else { continue }
+                
+                if piece.color == .black && piece.type == .pawn {
+                    return Coordinate(x: i, y: rows-1)
+                }
+            }
+            
+        }
+        
+        return nil
     }
     
     private func move() {
@@ -150,10 +202,13 @@ class ChessBoardGame: ObservableObject {
         var to = lastHistoryElement.toFields
         
         while !from.isEmpty {
-            let fromField = from.popFirst()!
-            piecesBoard[fromField.key.y][fromField.key.x] = nil
-            let toField = to.popFirst()!
-            piecesBoard[toField.key.y][toField.key.x] = fromField.value
+            let fromField = from.popLast()!
+            let toField = to.popLast()!
+            piecesBoard[fromField.coordinate.y][fromField.coordinate.x] = nil
+            piecesBoard[toField.coordinate.y][toField.coordinate.x] = fromField.piece
+            if piecesBoard[toField.coordinate.y][toField.coordinate.x] != nil {
+                piecesBoard[toField.coordinate.y][toField.coordinate.x]!.moved = true
+            }
         }
     }
     
@@ -191,7 +246,10 @@ class ChessBoardGame: ObservableObject {
     private func isEnPasantMove(chosenPiece: Piece, coordinate: Coordinate) -> Bool {
         if chosenPiece.type == .pawn {
             let enemyPawnDir = activePlayer == .white ? 1 : -1
-            if currentTwoSteppedPawnCoordinate == Coordinate(x: coordinate.x, y: coordinate.y + enemyPawnDir) {
+            guard let twoSteppedcoordinate = history.last?.twoSteppedPawnCoordinate else {
+                return false
+            }
+            if twoSteppedcoordinate == Coordinate(x: coordinate.x, y: coordinate.y + enemyPawnDir) {
                 return true
             }
         }
@@ -205,53 +263,71 @@ class ChessBoardGame: ObservableObject {
     private func saveMove(rootFile: Coordinate, destFile: Coordinate) {
         var moveHistoryElement = historyElement()
         
-        moveHistoryElement.twoSteppedPawnCoordinate = currentTwoSteppedPawnCoordinate
+        moveHistoryElement.twoSteppedPawnCoordinate = twoSteppedPawnMove(from: rootFile, destination: destFile)
         
-        moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][rootFile.x], forKey: rootFile)
-        moveHistoryElement.toFields.updateValue(piecesBoard[destFile.y][destFile.x], forKey: destFile)
+        moveHistoryElement.fromFields.append(historyElement.field(coordinate: rootFile, piece: piecesBoard[rootFile.y][rootFile.x]))
+        moveHistoryElement.toFields.append(historyElement.field(coordinate: destFile, piece: piecesBoard[destFile.y][destFile.x]))
         
         if isEnPasantMove {
-            let direction = activePlayer == .white ? 1 : -1
-            let enPasantFrom = Coordinate(x: destFile.x, y: destFile.y - direction)
-            let enPasantDir = Coordinate(x: destFile.x, y: destFile.y + direction)
-            moveHistoryElement.fromFields.updateValue(piecesBoard[enPasantFrom.y][enPasantFrom.x], forKey: enPasantFrom)
-            moveHistoryElement.toFields.updateValue(piecesBoard[enPasantDir.y][enPasantDir.x], forKey: enPasantDir)
+            let enemyDir = activePlayer == .white ? 1 : -1
+            let enPasantFrom = Coordinate(x: destFile.x, y: destFile.y + enemyDir)
+            let enPasantDir = Coordinate(x: destFile.x, y: destFile.y + enemyDir)
+            moveHistoryElement.fromFields.append(historyElement.field(coordinate: enPasantFrom, piece: nil))
+            moveHistoryElement.toFields.append(historyElement.field(coordinate: enPasantDir, piece: piecesBoard[enPasantDir.y][enPasantDir.x]))
         } else if isRightCastleMove {
-            moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][7], forKey: Coordinate(x: 7, y: rootFile.y))
-            moveHistoryElement.toFields.updateValue(piecesBoard[rootFile.y][5], forKey: Coordinate(x: 5, y: rootFile.y))
+            moveHistoryElement.fromFields.append(historyElement.field(coordinate: Coordinate(x: 7, y: rootFile.y), piece: piecesBoard[rootFile.y][7]))
+            moveHistoryElement.toFields.append(historyElement.field(coordinate: Coordinate(x: 5, y: rootFile.y), piece: piecesBoard[rootFile.y][5]))
         } else if isLeftCastleMove {
-            moveHistoryElement.fromFields.updateValue(piecesBoard[rootFile.y][0], forKey: Coordinate(x: 0, y: rootFile.y))
-            moveHistoryElement.toFields.updateValue(piecesBoard[rootFile.y][3], forKey: Coordinate(x: 3, y: rootFile.y))
+            moveHistoryElement.fromFields.append(historyElement.field(coordinate: Coordinate(x: 0, y: rootFile.y), piece: piecesBoard[rootFile.y][0]))
+            moveHistoryElement.toFields.append(historyElement.field(coordinate: Coordinate(x: 3, y: rootFile.y), piece: piecesBoard[rootFile.y][3]))
         }
+        
         history.append(moveHistoryElement)
     }
     
     func goToLastGameState() {
-        restoreLastMove()
-        preparePlayPhase()
-    }
-    
-    private func restoreLastMove() {
         if !history.isEmpty {
             draw = false
             checkMate = false
-            
-            let lastHistoryElement = history.popLast()!
-            activePlayer = activePlayer == .white ? .black : .white
             resetCurrentMoves()
             currentChosenPieceCoordinate = nil
-            currentTwoSteppedPawnCoordinate = lastHistoryElement.twoSteppedPawnCoordinate
             
-            for file in lastHistoryElement.fromFields {
-                piecesBoard[file.key.y][file.key.x] = file.value
+            let beforeMove = history.popLast()!
+            
+            for file in beforeMove.fromFields {
+                piecesBoard[file.coordinate.y][file.coordinate.x] = file.piece
             }
-            for file in lastHistoryElement.toFields {
-                piecesBoard[file.key.y][file.key.x] = file.value
+            for file in beforeMove.toFields {
+                piecesBoard[file.coordinate.y][file.coordinate.x] = file.piece
             }
+            
+            setNextPlayer()
+            preparePlayPhase()
         }
+        
     }
     
-    
+    private func revokeLastMove() {
+        draw = false
+        checkMate = false
+        
+        resetCurrentMoves()
+        currentChosenPieceCoordinate = nil
+        
+        guard let lastHistoryElement = history.popLast() else {
+            print("No element in history")
+            return
+        }
+        var from = lastHistoryElement.fromFields
+        var to = lastHistoryElement.toFields
+        
+        while !from.isEmpty {
+            let fromField = from.popLast()!
+            let toField = to.popLast()!
+            piecesBoard[fromField.coordinate.y][fromField.coordinate.x] = fromField.piece
+            piecesBoard[toField.coordinate.y][toField.coordinate.x] = toField.piece
+        }
+    }
     
     private func createMovesForPiece(pCoor: Coordinate, isAttacking: Bool) {
         guard piecesBoard[pCoor.y][pCoor.x] != nil else {
@@ -305,8 +381,7 @@ class ChessBoardGame: ObservableObject {
                 if isKingViolated(kCoor: kingCoordinate) {
                     isViolating = true
                 }
-                setNextPlayer()
-                restoreLastMove()
+                revokeLastMove()
                 piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(!isViolating, forKey: move.key)
             }
         }
@@ -358,6 +433,7 @@ extension ChessBoardGame {
             print("Error chosing piece")
             return
         }
+        let twoSteppedPawnCoordinate = history.last?.twoSteppedPawnCoordinate
         
         let direction = piecesBoard[pCoor.y][pCoor.x]!.color == .white ? -1 : 1
         var cursor = Coordinate(x: pCoor.x, y: pCoor.y)
@@ -365,8 +441,8 @@ extension ChessBoardGame {
 
         cursor.x = pCoor.x - 1
         
-        if currentTwoSteppedPawnCoordinate == cursor {
-            if getColorOfPiece(at: currentTwoSteppedPawnCoordinate!) != piece.color {
+        if twoSteppedPawnCoordinate  == cursor {
+            if getColorOfPiece(at: twoSteppedPawnCoordinate!) != piece.color {
                 cursor.y = pCoor.y + direction
                 _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
             }
@@ -375,8 +451,8 @@ extension ChessBoardGame {
         
         cursor.x = pCoor.x + 1
         cursor.y = pCoor.y
-        if currentTwoSteppedPawnCoordinate == cursor {
-            if getColorOfPiece(at: currentTwoSteppedPawnCoordinate!) != piece.color {
+        if twoSteppedPawnCoordinate == cursor {
+            if getColorOfPiece(at: twoSteppedPawnCoordinate!) != piece.color {
                 cursor.y = pCoor.y + direction
                 _ = appendPawnMoveIfCorrect(pCoor: pCoor, cursor: cursor)
             }
@@ -414,7 +490,7 @@ extension ChessBoardGame {
         
         let piece = piecesBoard[cursor.y][cursor.x]
             
-        if piece?.color != piecesBoard[pCoor.y][pCoor.x]!.color {
+        if piece?.color != activePlayer {
             
             guard piece != nil else { return true }
             piecesBoard[pCoor.y][pCoor.x]!.moveList.updateValue(true, forKey: cursor)
@@ -660,7 +736,7 @@ extension ChessBoardGame {
 }
 
 
-let startingConfiguration = [[Piece(type: .rook, color: .black), Piece(type: .knight, color: .black), Piece(type: .bishop, color: .black), Piece(type: .queen, color: .black), Piece(type: .king, color: .black), Piece(type: .bishop, color: .black), Piece(type: .knight, color: .black), Piece(type: .rook, color: .black)],
+let normalConfiguration = [[Piece(type: .rook, color: .black), Piece(type: .knight, color: .black), Piece(type: .bishop, color: .black), Piece(type: .queen, color: .black), Piece(type: .king, color: .black), Piece(type: .bishop, color: .black), Piece(type: .knight, color: .black), Piece(type: .rook, color: .black)],
                              [Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black), Piece(type: .pawn, color: .black)],
                              [nil, nil, nil, nil, nil, nil, nil, nil],
                              [nil, nil, nil, nil, nil, nil, nil, nil],
@@ -668,3 +744,6 @@ let startingConfiguration = [[Piece(type: .rook, color: .black), Piece(type: .kn
                              [nil, nil, nil, nil, nil, nil, nil, nil],
                              [Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white), Piece(type: .pawn, color: .white)],
                              [Piece(type: .rook, color: .white), Piece(type: .knight, color: .white), Piece(type: .bishop, color: .white), Piece(type: .queen, color: .white), Piece(type: .king, color: .white), Piece(type: .bishop, color: .white), Piece(type: .knight, color: .white), Piece(type: .rook, color: .white)]]
+
+
+

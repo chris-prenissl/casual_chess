@@ -40,8 +40,12 @@ struct ContentView: View {
                     .buttonStyle(ChessButtonStyle())
                 }
             }
-            if game.checkMate {
-                Text("Schachmatt")
+            if game.pawnReplacementCoordinate != nil {
+                PieceReplacementDialog(color: game.activePlayer, coordinate: game.pawnReplacementCoordinate!, sizeFactor: sizeFactor, width: boardWidth, choosenType: nil, game: game)
+            } else if game.checkMate {
+                MessageView(message: "Schachmatt")
+            } else if game.draw {
+                MessageView(message: "Unentschieden")
             } else {
                 Color(.clear)
             }
