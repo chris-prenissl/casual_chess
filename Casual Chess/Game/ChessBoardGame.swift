@@ -48,15 +48,12 @@ class ChessBoardGame: ObservableObject {
     
         
     init() {
-        testConfig[0][4] = Piece(type: .king, color: .black)
+        testConfig[0][7] = Piece(type: .king, color: .black)
+        testConfig[0][6] = Piece(type: .bishop, color: .black)
         testConfig[7][4] = Piece(type: .king, color: .white)
-//        testConfig[1][0] = Piece(type: .rook, color: .white)
-//        testConfig[7][3] = Piece(type: .rook, color: .white)
-//        testConfig[7][5] = Piece(type: .rook, color: .white)
-//        testConfig[5][4] = Piece(type: .rook, color: .white)
-        testConfig[1][7] = Piece(type: .pawn, color: .black)
-        testConfig[3][6] = Piece(type: .pawn, color: .white)
-        startingConfiguration = normalConfiguration
+        testConfig[6][6] = Piece(type: .rook, color: .white)
+        testConfig[7][6] = Piece(type: .rook, color: .white)
+        startingConfiguration = testConfig
         piecesBoard = startingConfiguration
         preparePlayPhase()
     }
@@ -103,26 +100,27 @@ class ChessBoardGame: ObservableObject {
     }
     
     private func check() {
-        kingHasToMove = false
         guard let kCoor = getKingCoor() else {
             print("No king found")
             return
         }
         if isKingViolated(kCoor: kCoor) {
-            currentChosenPieceCoordinate = kCoor
-            createMovesForKing(pCoor: kCoor)
-            removeKingViolatingMoves(pCoor: kCoor)
-            currentChosenPieceCoordinate = kCoor
-            currentMoves = getMovesOf(coordinate: kCoor)
-            kingHasToMove = true
-            var kingCannotMove = true
-            for move in currentMoves {
-                if move.value { kingCannotMove = false}
-            }
-            if kingCannotMove {
-                checkMate = true
+            checkMate = !checkIfNonKingViolatingMoveExists()
+        }
+    }
+    
+    private func checkIfNonKingViolatingMoveExists() -> Bool {
+        for i in 0..<rows {
+            for j in 0..<columns {
+                guard let piece = piecesBoard[i][j] else { continue }
+                guard piece.color == activePlayer else { continue }
+                
+                for move in piece.moveList {
+                    if move.value { return true }
+                }
             }
         }
+        return false
     }
     
     private func getMovesOf(coordinate: Coordinate) -> [Coordinate : Bool] {
