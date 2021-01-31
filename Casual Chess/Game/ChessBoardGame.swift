@@ -48,12 +48,7 @@ class ChessBoardGame: ObservableObject {
     
         
     init() {
-        testConfig[0][7] = Piece(type: .king, color: .black)
-        testConfig[0][6] = Piece(type: .bishop, color: .black)
-        testConfig[7][4] = Piece(type: .king, color: .white)
-        testConfig[6][6] = Piece(type: .rook, color: .white)
-        testConfig[7][6] = Piece(type: .rook, color: .white)
-        startingConfiguration = testConfig
+        startingConfiguration = normalConfiguration
         piecesBoard = startingConfiguration
         preparePlayPhase()
     }

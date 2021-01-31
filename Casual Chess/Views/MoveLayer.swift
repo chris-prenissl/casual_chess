@@ -29,11 +29,11 @@ struct ChessPlayGrid: View {
                                     game.tryToMovePieceTo(x: column, y: row)
                                 }
                             }
-                        let borderColor = game.currentMoves[Coordinate(x: column, y: row)] == false ? Color(.red) : Color(.blue)
+                        let borderColor = game.currentMoves[Coordinate(x: column, y: row)] == false ? Color("purple") : Color("green")
                         PieceView(piece: game.piecesBoard[row][column], sizeFactor: sizeFactor, width: width)
                             .gesture(tapGesture)
                             .background(game.currentChosenPieceCoordinate?.x == column && game.currentChosenPieceCoordinate?.y == row ? Color(.cyan) : Color(.clear))
-                            .border(game.currentMoves[Coordinate(x: column, y: row)] == nil ? Color(.clear) : borderColor)
+                            .border(game.currentMoves[Coordinate(x: column, y: row)] == nil ? Color(.clear) : borderColor, width: 4)
                     }
                 }
             }
