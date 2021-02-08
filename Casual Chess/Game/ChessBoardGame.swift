@@ -48,7 +48,12 @@ class ChessBoardGame: ObservableObject {
     
         
     init() {
-        startingConfiguration = normalConfiguration
+        testConfig[6][5] = Piece(type: .king, color: .white)
+        testConfig[0][4] = Piece(type: .king, color: .black)
+        testConfig[6][4] = Piece(type: .pawn, color: .white)
+        testConfig[6][3] = Piece(type: .pawn, color: .white)
+        testConfig[5][4] = Piece(type: .pawn, color: .black)
+        startingConfiguration = testConfig
         piecesBoard = startingConfiguration
         preparePlayPhase()
     }
@@ -99,7 +104,7 @@ class ChessBoardGame: ObservableObject {
             print("No king found")
             return
         }
-        if isKingViolated(kCoor: kCoor) {
+        if isKingViolatedByEnemyMove(kCoor: kCoor) {
             checkMate = !checkIfNonKingViolatingMoveExists()
         }
     }
@@ -371,7 +376,7 @@ class ChessBoardGame: ObservableObject {
                 
                 setNextPlayer()
                 let kingCoordinate = getKingCoor()!
-                if isKingViolated(kCoor: kingCoordinate) {
+                if isKingViolatedByEnemyMove(kCoor: kingCoordinate) {
                     isViolating = true
                 }
                 revokeLastMove()
@@ -551,13 +556,15 @@ extension ChessBoardGame {
         }
     }
     
-    private func isKingViolated(kCoor: Coordinate) -> Bool {
+    private func isKingViolatedByEnemyMove(kCoor: Coordinate) -> Bool {
         for j in 0...(rows-1) {
             for i in 0...(columns-1) {
                 guard piecesBoard[j][i] != nil else { continue }
                 guard piecesBoard[j][i]!.color != activePlayer else { continue }
                 
+                setNextPlayer()
                 createMovesForPiece(pCoor: Coordinate(x: i, y: j), isAttacking: false)
+                setNextPlayer()
                 
                 for move in piecesBoard[j][i]!.moveList {
                     if move.key == kCoor && move.value {
