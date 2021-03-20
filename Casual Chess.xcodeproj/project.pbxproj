@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		210DA19925B396CD0020CAEC /* Coordinate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 210DA19825B396CD0020CAEC /* Coordinate.swift */; };
+		212B7AC425D1D712000680E6 /* ChessAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212B7AC325D1D712000680E6 /* ChessAI.swift */; };
 		214DE98225AB7E2A004793BF /* Casual_ChessApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE98125AB7E2A004793BF /* Casual_ChessApp.swift */; };
 		214DE98425AB7E2A004793BF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 214DE98325AB7E2A004793BF /* ContentView.swift */; };
 		214DE98625AB7E2A004793BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 214DE98525AB7E2A004793BF /* Assets.xcassets */; };
@@ -44,6 +45,7 @@
 
 /* Begin PBXFileReference section */
 		210DA19825B396CD0020CAEC /* Coordinate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinate.swift; sourceTree = "<group>"; };
+		212B7AC325D1D712000680E6 /* ChessAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessAI.swift; sourceTree = "<group>"; };
 		214DE97E25AB7E2A004793BF /* Casual Chess.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Casual Chess.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		214DE98125AB7E2A004793BF /* Casual_ChessApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Casual_ChessApp.swift; sourceTree = "<group>"; };
 		214DE98325AB7E2A004793BF /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -190,6 +192,7 @@
 			children = (
 				21E152FB25AB930300CD9FF3 /* ChessBoardGame.swift */,
 				21E152F625AB907700CD9FF3 /* Piece.swift */,
+				212B7AC325D1D712000680E6 /* ChessAI.swift */,
 			);
 			path = Game;
 			sourceTree = "<group>";
@@ -324,6 +327,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				212B7AC425D1D712000680E6 /* ChessAI.swift in Sources */,
 				214DE98425AB7E2A004793BF /* ContentView.swift in Sources */,
 				214FDCD325B474C70062240D /* BackgroundLayer.swift in Sources */,
 				21E152FC25AB930300CD9FF3 /* ChessBoardGame.swift in Sources */,
@@ -492,6 +496,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Casual Chess/Casual Chess.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
@@ -517,6 +522,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "Casual Chess/Casual Chess.entitlements";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
