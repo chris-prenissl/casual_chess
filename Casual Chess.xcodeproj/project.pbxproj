@@ -501,7 +501,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "/Users/christophprenissl/Projects/Swift/Casual Chess/Casual ChessUITests/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Casual ChessUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -527,8 +527,8 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Casual Chess/Preview Content\"";
 				DEVELOPMENT_TEAM = R2YVCZ58UE;
 				ENABLE_PREVIEWS = YES;
-				INFOPLIST_FILE = "/Users/christophprenissl/Projects/Swift/Casual Chess/Casual ChessUITests/Info.plist";
-				"INFOPLIST_FILE[sdk=*]" = "/Users/christophprenissl/Projects/Swift/Casual Chess/Casual ChessUITests/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/Casual ChessUITests/Info.plist";
+				"INFOPLIST_FILE[sdk=*]" = "$(SRCROOT)/Casual ChessUITests/Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
