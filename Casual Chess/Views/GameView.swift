@@ -13,7 +13,7 @@ extension UIScreen {
     static let screenSize = UIScreen.main.bounds.size
 }
 
-struct ContentView: View {
+struct GameView: View {
     
     let boardWidth = UIScreen.screenWidth > UIScreen.screenHeight ? UIScreen.screenHeight : UIScreen.screenWidth
     let sizeFactor: CGFloat = 8.75
@@ -66,8 +66,8 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
+struct GameView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        GameView()
     }
 }

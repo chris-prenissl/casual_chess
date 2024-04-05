@@ -40,3 +40,9 @@ struct ChessBoard: View {
         }
     }
 }
+
+struct ChessBoard_Previews: PreviewProvider {
+    static var previews: some View {
+        ChessBoard(sizeFactor: 8.75, width: UIScreen.screenWidth)
+    }
+}
