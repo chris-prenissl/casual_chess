@@ -58,7 +58,7 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "backward.end.fill")
-                            .accentColor(Color("lightBrown"))
+                            .accentColor(Color("lightMain"))
                     }
                 }
             }

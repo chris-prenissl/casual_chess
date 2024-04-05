@@ -10,7 +10,7 @@ import SwiftUI
 
 struct Canvas: View {
     var body: some View {
-        LinearGradient(gradient: Gradient(colors: [Color.black, Color("darkBrown"), Color("lightBrown")]), startPoint: .topLeading, endPoint: .bottomTrailing)
+        LinearGradient(gradient: Gradient(colors: [Color.black, Color("darkMain"), Color("lightMain")]), startPoint: .topLeading, endPoint: .bottomTrailing)
             .ignoresSafeArea()
     }
 }
@@ -27,10 +27,10 @@ struct ChessBoard: View {
                         ForEach(0..<8, id: \.self) { column in
                             
                             if (row % 2 == 0 && column % 2 == 1 || row % 2 == 1 && column % 2 == 0) {
-                               Color("darkBrown")
+                               Color("darkMain")
                                     .frame(width: width / sizeFactor, height: width / sizeFactor, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
                             } else {
-                                Color("lightBrown")
+                                Color("lightMain")
                                     .frame(width: width / sizeFactor, height: width / sizeFactor, alignment: /*@START_MENU_TOKEN@*/.center/*@END_MENU_TOKEN@*/)
                             }
                         }

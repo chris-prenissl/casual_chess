@@ -13,7 +13,7 @@ struct ChessButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Self.Configuration) -> some View {
         configuration.label
-            .foregroundColor(Color("lightBrown"))
+            .foregroundColor(Color("lightMain"))
             .padding()
             .background(Color(.brown))
             .cornerRadius(10)

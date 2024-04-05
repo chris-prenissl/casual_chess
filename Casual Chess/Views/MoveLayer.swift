@@ -29,7 +29,7 @@ struct ChessPlayGrid: View {
                                     game.tryToMovePieceTo(x: column, y: row)
                                 }
                             }
-                        let borderColor = game.currentMoves[Coordinate(x: column, y: row)] == false ? Color("purple") : Color("green")
+                        let borderColor = game.currentMoves[Coordinate(x: column, y: row)] == false ? Color("secondHighlight") : Color("primaryHighlight")
                         PieceView(piece: game.piecesBoard[row][column], sizeFactor: sizeFactor, width: width)
                             .gesture(tapGesture)
                             .background(game.currentChosenPieceCoordinate?.x == column && game.currentChosenPieceCoordinate?.y == row ? Color(.cyan) : Color(.clear))

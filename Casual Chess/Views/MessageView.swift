@@ -14,8 +14,8 @@ struct MessageView: View {
         ZStack {
             Text(message)
                 .padding()
-                .background(LinearGradient(gradient: Gradient(colors: [Color("darkBrown"), Color("lightBrown")]), startPoint: UnitPoint(x: 0, y: 1), endPoint: UnitPoint(x: 1, y: 1)))
-                .border(Color("darkBrown"), width: 2)
+                .background(LinearGradient(gradient: Gradient(colors: [Color("darkMain"), Color("lightMain")]), startPoint: UnitPoint(x: 0, y: 1), endPoint: UnitPoint(x: 1, y: 1)))
+                .border(Color("darkMain"), width: 2)
                 .cornerRadius(4)
         }
     }
