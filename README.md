@@ -19,7 +19,7 @@ _Xcode_ | _Swift_ | _SwiftUI_
 
 ### Prerequisites
 
-- Xcode 13 or newer
+- Xcode 14 or newer
 - Installed iOS 14+ emulator, MacOS with Catalyst (Apple Silicon) or connected iOS 14+ device
 
 ### Installation
