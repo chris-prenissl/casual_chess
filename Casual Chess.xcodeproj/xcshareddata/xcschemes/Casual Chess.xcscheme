@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "214DE97D25AB7E2A004793BF"
+               BlueprintIdentifier = "21CE95AF2C21D7C700A63A68"
                BuildableName = "Casual Chess.app"
                BlueprintName = "Casual Chess"
                ReferencedContainer = "container:Casual Chess.xcodeproj">
@@ -64,7 +64,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "214DE97D25AB7E2A004793BF"
+            BlueprintIdentifier = "21CE95AF2C21D7C700A63A68"
             BuildableName = "Casual Chess.app"
             BlueprintName = "Casual Chess"
             ReferencedContainer = "container:Casual Chess.xcodeproj">
@@ -81,7 +81,7 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "214DE97D25AB7E2A004793BF"
+            BlueprintIdentifier = "21CE95AF2C21D7C700A63A68"
             BuildableName = "Casual Chess.app"
             BlueprintName = "Casual Chess"
             ReferencedContainer = "container:Casual Chess.xcodeproj">
