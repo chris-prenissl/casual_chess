@@ -7,7 +7,7 @@
 _Casual Chess_ is a local chess client that can be played with a friend on iPhone, iPad, Apple Vision or Mac with Catalyst.
 Just press rewind when a player is not happy with the outcome of a move.
 
-<img src="img/video.gif" alt="Casual Chess clip" height="400" width="184.8"/>
+<img src="img/video.gif" alt="Casual Chess clip" height="400" width="184"/>
 
 ## Technologies
 
