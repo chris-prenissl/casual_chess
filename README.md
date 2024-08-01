@@ -1,11 +1,13 @@
-# Casual Chess
+<img src="Casual Chess/Assets and Configurations/Assets.xcassets/AppIcon.appiconset/64.png" alt="App Icon" width="64"/>
 
-![Casual Chess Demo](img/video.gif)
+# Casual Chess
 
 ## Overview
 
 _Casual Chess_ is a local chess client that can be played with a friend on iPhone, iPad, Apple Vision or Mac with Catalyst.
 Just press rewind when a player is not happy with the outcome of a move.
+
+<img src="img/video.gif" alt="Casual Chess clip" height="400" width="184.8"/>
 
 ## Technologies
 
@@ -13,7 +15,9 @@ _Xcode_ | _Swift_ | _SwiftUI_
 
 ## Images
 
-![Casual Chess Screen 1](img/screenshot_1.png) ![Casual Chess Screen 2](img/screenshot_2.png)
+<img src="img/screenshot_1.png" alt="Screenshot 1" height="400"/>
+
+<img src="img/screenshot_2.png" alt="Screenshot 2" height="400"/>
 
 ## Usage
 
